@@ -48,10 +48,16 @@
     forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
   in
   {
-
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
+    # we need to export micro-xrce-dds-gen so that we could call the
+    # build .mitmCache.updateScript
+    packages.x86_64-linux = let
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        overlays = [ self.overlays.regularDeps ];
+      };
+    in {
+      micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
+    };
 
     overlays.regularDeps = final: prev: {
       # micro-ros-agent deps
