@@ -1,0 +1,24 @@
+From 755704b7c1b76fd15cc4a3eca2d48d024033cd3d Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Thu, 11 Sep 2025 10:25:03 -0400
+Subject: [PATCH] remove git dependency
+
+---
+ build.gradle | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/build.gradle b/build.gradle
+index 70314f9..637cf05 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -105,7 +105,6 @@ task buildIDLParser(type: GradleBuild) {
+     dir = 'thirdparty/IDL-Parser'
+     tasks = ['clean', 'build']
+ }
+-buildIDLParser.dependsOn submodulesUpdate
+ 
+ task copyResources {
+     // Copy platforms file
+-- 
+2.49.0
+
