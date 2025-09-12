@@ -62,11 +62,9 @@
     overlays.regularDeps = final: prev: {
       # micro-ros-agent deps
       fast-dds = prev.callPackage ./pkgs/fast-dds {};
-      # TODO: foonathan-memory-vendor exists
-      # foonathan-memory = prev.callPackage ./pkgs/foonathan-memory {};
       fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
-      micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
-      micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
+      # micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
+      # micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
       micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
 
@@ -116,6 +114,7 @@
 
             # for development
             pkgs.tmux
+            ros2nix.packages."${system}".default
 
             # pkgs.micro-xrce-dds-agent
             # pkgs.micro-xrce-dds-client
@@ -185,8 +184,6 @@
                 python3Packages.pexpect
               ];
             })
-
-            ros2nix.packages."${system}".default
           ];
         };
       });
