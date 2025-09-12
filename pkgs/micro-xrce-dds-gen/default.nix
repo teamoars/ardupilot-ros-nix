@@ -18,16 +18,15 @@ stdenv.mkDerivation {
   inherit name;
 
   src = fetchFromGitHub {
-    owner = "eProsima";
+    owner = "ardupilot";
     repo = "Micro-XRCE-DDS-Gen";
-    rev = "a9016b950f82290613745219980d5f92b9cd20e5";
-    hash = "sha256-hyTHQP8zA1qA5E2zd+FBqorVDVwRiUJjXQeGWwiZaCg=";
+    rev = "v4.7.0";
+    hash = "sha256-803wRVWXOYqsyKWL0U/jEMiAMc7jXOhyMFGFUjTCua0=";
     fetchSubmodules = true; # IDL-Parser
   };
 
   patches = [
     ./0001-remove-git-dependency.patch
-    # ./0002-make-build.gradle-compatible-with-gradle-8.patch
   ];
 
 

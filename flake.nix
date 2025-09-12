@@ -63,7 +63,7 @@
       # micro-ros-agent deps
       fast-dds = prev.callPackage ./pkgs/fast-dds {};
       # TODO: foonathan-memory-vendor exists
-      foonathan-memory = prev.callPackage ./pkgs/foonathan-memory {};
+      # foonathan-memory = prev.callPackage ./pkgs/foonathan-memory {};
       fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
       micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
       micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
@@ -105,21 +105,37 @@
         };
       in
       {
-        default = pkgs.mkShell {
+        default = pkgs.mkShellNoCC {
           packages = [
+            # ardupilot won't build with gcc14
+            pkgs.gcc13Stdenv.cc
+
             pkgs.colcon
 
             pkgs.vcstool
 
-            pkgs.micro-xrce-dds-agent
-            pkgs.micro-xrce-dds-gen
+            # for development
+            pkgs.tmux
+
+            # pkgs.micro-xrce-dds-agent
+            # pkgs.micro-xrce-dds-client
+            # pkgs.fast-dds
 
             # for building MicroXRCEDDSGen
             # pkgs.gradle
-            pkgs.jdk11
+            # pkgs.jdk11
+
+            # for building & using the sitl
+            # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
+            pkgs.micro-xrce-dds-gen
+            pkgs.git
+            pkgs.rsync
+            pkgs.mavproxy
 
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
+                ros-core
+
                 ament-black
                 ament-cmake
                 ament-cmake-black
