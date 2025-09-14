@@ -24,26 +24,14 @@
       inputs.nix-ros-overlay.follows = "nix-ros-overlay";
     };
 
-    gradle2nix = {
-      url = "github:tadfisher/gradle2nix/v2";
+    nixgl = {
+      url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-
-#     gradle2nix = {
-#       url = "github:tadfisher/gradle2nix/v2";
-#       inputs.nixpkgs.follows = "nixpkgs";
-#       inputs.flake-utils.follows = "flake-utils";
-#     };
-# 
-#     nixgl = {
-#       url = "github:nix-community/nixGL";
-#       inputs.nixpkgs.follows = "nixpkgs";
-#       inputs.flake-utils.follows = "flake-utils";
-#     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, nix-ros-overlay, ros2nix, gradle2nix }:
+  outputs = { self, nixpkgs, flake-utils, nix-ros-overlay, ros2nix, nixgl }:
   let
     forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
   in
@@ -63,13 +51,10 @@
       # micro-ros-agent deps
       fast-dds = prev.callPackage ./pkgs/fast-dds {};
       fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
-      # micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
-      # micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
+      micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
+      micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
       micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
-
-      # is this a fine way to do this?
-      buildGradlePackage = self.inputs.gradle2nix.builders.${prev.system}.buildGradlePackage;
     };
     overlays.rosDeps = final: prev: {
       # TODO: why were these special?
@@ -79,7 +64,22 @@
       # ardupilot-dds-tests = super.callPackage ./ardupilot-dds-tests.nix {};
       ardupilot-msgs = prev.callPackage ./pkgs/ardupilot-msgs {};
       ardupilot-sitl = prev.callPackage ./pkgs/ardupilot-sitl {};
+
+      # nix-ros-overlay already does this except that ros_gz_sim got an update
+      # and the substitute no longer works! Wonderful stuff 
+      ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
+        postPatch ? "", ...
+      }: {
+        # This launch file attempts to run the gz tool with a Ruby interpreter, but
+        # in our case it is an regular executable because it is wrapped.
+        postPatch = postPatch + ''
+          substituteInPlace launch/gz_sim.launch.py.in \
+            --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
+            --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
+        '';
+      });
     };
+    # I don't remember where I found this it'd be nice to figure that out
     overlays.rosDistroOverlays = let
       applyDistroOverlay =
         rosOverlay: rosPackages:
@@ -97,8 +97,12 @@
           inherit system;
           overlays = [
             nix-ros-overlay.overlays.default
+            nixgl.overlay
             self.overlays.regularDeps
             self.overlays.rosDistroOverlays
+          ];
+          config.permittedInsecurePackages = [
+            "freeimage-3.18.0-unstable-2024-04-18"
           ];
         };
       in
@@ -114,6 +118,9 @@
 
             # for development
             pkgs.tmux
+            pkgs.which
+            pkgs.less
+            pkgs.vim
             ros2nix.packages."${system}".default
 
             # pkgs.micro-xrce-dds-agent
@@ -130,6 +137,8 @@
             pkgs.git
             pkgs.rsync
             pkgs.mavproxy
+            # don't ask my why "Intel" corresponds to amdgpu
+            pkgs.nixgl.nixGLIntel
 
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
@@ -139,9 +148,14 @@
                 ament-cmake
                 ament-cmake-black
                 ament-cmake-copyright
-                ament-cmake-gtest
+                ament-cmake-cppcheck
+                ament-cmake-cpplint
+                ament-cmake-flake8
                 ament-cmake-lint-cmake
+                ament-cmake-mypy
+                ament-cmake-pclint
                 ament-cmake-pep257
+                ament-cmake-pycodestyle
                 ament-cmake-pytest
                 ament-cmake-python
                 ament-cmake-uncrustify
@@ -156,38 +170,100 @@
                 builtin-interfaces
                 geographic-msgs
                 geometry-msgs
+                pkgs.gst_all_1.gst-libav
+                pkgs.gst_all_1.gst-plugins-bad
+                pkgs.gst_all_1.gst-plugins-base
+                pkgs.gst_all_1.gstreamer
+                pkgs.gz-cmake_3
+                gz-common-vendor
+                gz-plugin-vendor
+                gz-sim-vendor
                 launch
                 launch-pytest
                 launch-ros
+                micro-ros-agent
                 micro-ros-msgs
-                python3Packages.geopy
-                python3Packages.pytest
-                python3Packages.scipy
+                pkgs.opencv
+                pkgs.opencv.cxxdev
+                pkgs.python3Packages.geopy
+                pkgs.python3Packages.pytest
+                pkgs.python3Packages.scipy
+                pkgs.rapidjson
                 rclpy
-                rcutils
-                rmw
-                rmw-dds-common
-                rmw-fastrtps-shared-cpp
+                robot-state-publisher
+                ros-gz-bridge
+                ros-gz-sim
                 rosgraph-msgs
                 rosidl-default-generators
                 rosidl-default-runtime
-                rosidl-typesupport-fastrtps-cpp
+                sdformat-urdf
                 sensor-msgs
                 pkgs.socat
                 std-msgs
                 tf2-msgs
+                topic-tools
 
                 # these are the deps that ros2nix missed?
                 ament-cmake-core
                 python-cmake-module
                 micro-ros-agent
                 python3Packages.pexpect
+                rviz2
+
+                # gazebo?
+                # https://github.com/lopsided98/nix-ros-overlay/pull/591
+                # https://github.com/lopsided98/nix-ros-overlay/issues/638
+                # ros-gz
+                ros-gz-sim
+                ros-gz-sim-demos
+                sdformat-urdf
+                # from https://github.com/lopsided98/nix-ros-overlay/pull/422
+                gz-cmake-vendor
+                gz-common-vendor
+                gz-dartsim-vendor
+                gz-fuel-tools-vendor
+                gz-gui-vendor
+                gz-launch-vendor
+                gz-math-vendor
+                gz-msgs-vendor
+                gz-ogre-next-vendor
+                gz-physics-vendor
+                gz-plugin-vendor
+                gz-rendering-vendor
+                gz-sensors-vendor
+                gz-sim-vendor
+                gz-tools-vendor
+                gz-transport-vendor
+                gz-utils-vendor
+                ros-gz
+                ros-core
+
+                # gazebo?
+#                 ros-gz
+#                 geometry-msgs
+#                 turtlebot4-desktop
+#                 turtlebot4-simulator
+#                 slam-toolbox
+#                 nav2-minimal-tb4-sim
+#                 nav2-minimal-tb3-sim
+#                 # rqt metapackages
+#                 rqt-common-plugins
+#                 rqt-tf-tree
+#                 tf2-tools
+
+#                  geometry-msgs
+#                  turtlebot4-desktop
+#                  turtlebot4-simulator
+#                  slam-toolbox
+#                  nav2-minimal-tb4-sim
+#                  nav2-minimal-tb3-sim
               ];
             })
           ];
         };
       });
 
+    # the nix-ros-overlay binary cache
     nixConfig = {
       extra-substituters = [ "https://ros.cachix.org" ];
       extra-trusted-public-keys = [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];

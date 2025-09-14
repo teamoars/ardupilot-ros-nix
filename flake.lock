@@ -32,7 +32,29 @@
         "type": "github"
       }
     },
-    "gradle2nix": {
+    "nix-ros-overlay": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1757618515,
+        "narHash": "sha256-dXyMjQUXVyc/Rviqb+nf1zZZwCHDDloLsEg8Xp2Ds2c=",
+        "owner": "muellerbernd",
+        "repo": "nix-ros-overlay",
+        "rev": "6fa4f71e24c5a698efad8320448daf3f4fea3ff7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "muellerbernd",
+        "ref": "develop",
+        "repo": "nix-ros-overlay",
+        "type": "github"
+      }
+    },
+    "nixgl": {
       "inputs": {
         "flake-utils": [
           "flake-utils"
@@ -42,39 +64,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1755902591,
-        "narHash": "sha256-mnPaPH9k6Mbr7O0KzBBdkiDDS88oB5NiFHVSFkCzswU=",
-        "owner": "tadfisher",
-        "repo": "gradle2nix",
-        "rev": "30cfe5889188524223364ee7919d94e83d6ee44a",
+        "lastModified": 1752054764,
+        "narHash": "sha256-Ob/HuUhANoDs+nvYqyTKrkcPXf4ZgXoqMTQoCK0RFgQ=",
+        "owner": "nix-community",
+        "repo": "nixGL",
+        "rev": "a8e1ce7d49a149ed70df676785b07f63288f53c5",
         "type": "github"
       },
       "original": {
-        "owner": "tadfisher",
-        "ref": "v2",
-        "repo": "gradle2nix",
-        "type": "github"
-      }
-    },
-    "nix-ros-overlay": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1757365147,
-        "narHash": "sha256-8OSQIllCjizv3+EYjZXSOdl7Gct9F+Hm9VlEajWuV1Y=",
-        "owner": "muellerbernd",
-        "repo": "nix-ros-overlay",
-        "rev": "bc75f032d8bc14099965ada7d30b7a35cc118098",
-        "type": "github"
-      },
-      "original": {
-        "owner": "muellerbernd",
-        "ref": "develop",
-        "repo": "nix-ros-overlay",
+        "owner": "nix-community",
+        "repo": "nixGL",
         "type": "github"
       }
     },
@@ -97,8 +96,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "gradle2nix": "gradle2nix",
         "nix-ros-overlay": "nix-ros-overlay",
+        "nixgl": "nixgl",
         "nixpkgs": [
           "nix-ros-overlay",
           "nixpkgs"
