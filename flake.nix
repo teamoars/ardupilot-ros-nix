@@ -38,13 +38,21 @@
   {
     # we need to export micro-xrce-dds-gen so that we could call the
     # build .mitmCache.updateScript
+    #
+    # we also need ardupilot-sitl on it's own for ease of debugging the build
     packages.x86_64-linux = let
       pkgs = import nixpkgs {
         system = "x86_64-linux";
-        overlays = [ self.overlays.regularDeps ];
+        overlays = [
+          nix-ros-overlay.overlays.default
+          self.overlays.regularDeps
+          self.overlays.rosDistroOverlays
+        ];
       };
     in {
       micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
+
+      ardupilot-sitl = pkgs.rosPackages.jazzy.ardupilot-sitl;
     };
 
     overlays.regularDeps = final: prev: {
@@ -72,6 +80,8 @@
       }: {
         # This launch file attempts to run the gz tool with a Ruby interpreter, but
         # in our case it is an regular executable because it is wrapped.
+        # TODO: perhaps just create a regular patch instead of this
+        # substituteInPlace stuff
         postPatch = postPatch + ''
           substituteInPlace launch/gz_sim.launch.py.in \
             --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
@@ -130,15 +140,20 @@
             # for building MicroXRCEDDSGen
             # pkgs.gradle
             # pkgs.jdk11
-
+            
             # for building & using the sitl
             # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
             pkgs.micro-xrce-dds-gen
             pkgs.git
             pkgs.rsync
             pkgs.mavproxy
+            pkgs.mission-planner
             # don't ask my why "Intel" corresponds to amdgpu
             pkgs.nixgl.nixGLIntel
+
+            pkgs.python3Packages.ultralytics
+            pkgs.python3Packages.openvino
+            pkgs.opencv
 
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
@@ -238,6 +253,10 @@
                 ros-gz
                 ros-core
 
+                # at last
+                ardupilot-sitl
+
+
                 # gazebo?
 #                 ros-gz
 #                 geometry-msgs
@@ -257,6 +276,32 @@
 #                  slam-toolbox
 #                  nav2-minimal-tb4-sim
 #                  nav2-minimal-tb3-sim
+
+                # for our node
+                rclpy
+                pybind11-vendor
+                rqt-graph
+
+                # for yolo-ros
+                # really we should just package yolo-ros properly
+                # or perhaps use our own object detection node since yolo-ros
+                # does a bit more than we need
+                # geometry-msgs
+                # std-msgs
+                # ament-cmake
+                # ament-copyright
+                # ament-flake8
+                # ament-pep257
+                # pkgs.python3Packages.pytest
+                cv-bridge
+                # rclpy
+                # sensor-msgs
+                # std-srvs
+                # yolo-ros's python deps
+                # pkgs.python3Packages.numpy
+                # pkgs.python3Packages.opencv-python
+                # pkgs.python3Packages.typing-extensions
+                # pkgs.python3Packages.lap
               ];
             })
           ];
