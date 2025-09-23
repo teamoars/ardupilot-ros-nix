@@ -20,13 +20,15 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "ardupilot";
     repo = "Micro-XRCE-DDS-Gen";
-    rev = "v4.7.0";
-    hash = "sha256-803wRVWXOYqsyKWL0U/jEMiAMc7jXOhyMFGFUjTCua0=";
+    rev = "v4.7.1";
+    hash = "sha256-6mDIa6o6lrXHxYX+7HNPvUV8XFVuMeS1rYc3KSt+hLU=";
     fetchSubmodules = true; # IDL-Parser
   };
 
   patches = [
-    ./0001-remove-git-dependency.patch
+    ./remove-git-dependency.patch
+    ./ensure-fno-working-directory.patch
+    # ./more-verbose-exceptions.patch # for debugging the ardupilot-sitl build
   ];
 
 

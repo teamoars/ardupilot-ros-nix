@@ -53,6 +53,7 @@
       micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
 
       ardupilot-sitl = pkgs.rosPackages.jazzy.ardupilot-sitl;
+      ardupilot-msgs = pkgs.rosPackages.jazzy.ardupilot-msgs;
     };
 
     overlays.regularDeps = final: prev: {
@@ -218,6 +219,8 @@
                 tf2-msgs
                 topic-tools
 
+                tf2-ros
+
                 # these are the deps that ros2nix missed?
                 ament-cmake-core
                 python-cmake-module
@@ -254,28 +257,28 @@
                 ros-core
 
                 # at last
-                ardupilot-sitl
+                # ardupilot-sitl
 
 
                 # gazebo?
-#                 ros-gz
-#                 geometry-msgs
-#                 turtlebot4-desktop
-#                 turtlebot4-simulator
-#                 slam-toolbox
-#                 nav2-minimal-tb4-sim
-#                 nav2-minimal-tb3-sim
-#                 # rqt metapackages
-#                 rqt-common-plugins
-#                 rqt-tf-tree
-#                 tf2-tools
+                ros-gz
+                geometry-msgs
+                turtlebot4-desktop
+                turtlebot4-simulator
+                slam-toolbox
+                nav2-minimal-tb4-sim
+                nav2-minimal-tb3-sim
+                # rqt metapackages
+                rqt-common-plugins
+                rqt-tf-tree
+                tf2-tools
 
-#                  geometry-msgs
-#                  turtlebot4-desktop
-#                  turtlebot4-simulator
-#                  slam-toolbox
-#                  nav2-minimal-tb4-sim
-#                  nav2-minimal-tb3-sim
+                 geometry-msgs
+                 turtlebot4-desktop
+                 turtlebot4-simulator
+                 slam-toolbox
+                 nav2-minimal-tb4-sim
+                 nav2-minimal-tb3-sim
 
                 # for our node
                 rclpy

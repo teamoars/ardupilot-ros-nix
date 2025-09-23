@@ -1,0 +1,30 @@
+From 5deb80c341f81b65cf1f44137a8a550346ba029d Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Mon, 22 Sep 2025 23:00:33 -0400
+Subject: [PATCH] ensure -fno-working-directory
+
+---
+ .../java/com/eprosima/microxrcedds/microxrceddsgen.java    | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java b/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
+index 9aa8086..3394972 100644
+--- a/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
++++ b/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
+@@ -531,6 +531,13 @@ public class microxrceddsgen {
+         // Add command
+         lineCommand.add(ppPath);
+ 
++	// the parser assumes "-fno-working-directory"
++	// TODO: is there an analogous argument for windows?
++	// TODO: it'd be better to patch processPreprocessorLine instead
++        if (m_os.contains("Linux") || m_os.contains("Mac")) {
++            lineCommand.add("-fno-working-directory");
++        }
++
+         // Add the include paths given as parameters.
+         for (int i=0; i < m_includePaths.size(); ++i) {
+             if (m_os.contains("Windows")) {
+-- 
+2.49.1
+

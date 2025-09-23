@@ -1,0 +1,25 @@
+From 3833fb06655055e97897e9c0b3fa420a7989867b Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Mon, 22 Sep 2025 19:05:49 -0400
+Subject: [PATCH] more verbose exceptions
+
+---
+ src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java b/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
+index ded581e..9aa8086 100644
+--- a/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
++++ b/src/main/java/com/eprosima/microxrcedds/microxrceddsgen.java
+@@ -412,6 +412,8 @@ public class microxrceddsgen {
+                 System.out.println(ColorMessage.error("FileNotFounException") + "The File " + idlParseFileName + " was not found.");
+             } catch (Exception ex) {
+                 System.out.println(ColorMessage.error("Exception") + ex.getMessage());
++		// https://stackoverflow.com/questions/6822968/print-the-stack-trace-of-an-exception
++		ex.printStackTrace(System.out);
+             }
+ 
+             if (returnedValue)
+-- 
+2.49.1
+
