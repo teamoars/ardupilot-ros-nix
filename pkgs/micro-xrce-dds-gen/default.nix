@@ -28,7 +28,6 @@ stdenv.mkDerivation {
   patches = [
     ./remove-git-dependency.patch
     ./ensure-fno-working-directory.patch
-    # ./more-verbose-exceptions.patch # for debugging the ardupilot-sitl build
   ];
 
 
@@ -47,6 +46,9 @@ stdenv.mkDerivation {
     makeWrapper
     jdk
   ];
+
+  # TODO: micro-xrce-dds-gen uses "cpp" (c preprocessor) at runtime so we ought
+  # to declare that in propagatedBuildInputs
 
   installPhase = ''
     runHook preInstall
