@@ -70,9 +70,21 @@
       micro-ros-agent = prev.callPackage ./pkgs/micro-ros-agent {};
       # inject micro-xrce-dds-agent dep
       # micro-ros-agent = 
+      ardupilot-gazebo = prev.callPackage ./pkgs/ardupilot-gazebo {};
+      ardupilot-gz-application = prev.callPackage ./pkgs/ardupilot-gz-application {};
+      ardupilot-gz-bringup = prev.callPackage ./pkgs/ardupilot-gz-bringup {};
+      ardupilot-gz-description = prev.callPackage ./pkgs/ardupilot-gz-description {};
+      ardupilot-gz-gazebo = prev.callPackage ./pkgs/ardupilot-gz-gazebo {};
+      ardupilot-sitl-models = prev.callPackage ./pkgs/ardupilot-sitl-models {};
       # ardupilot-dds-tests = super.callPackage ./ardupilot-dds-tests.nix {};
       ardupilot-msgs = prev.callPackage ./pkgs/ardupilot-msgs {};
       ardupilot-sitl = prev.callPackage ./pkgs/ardupilot-sitl {};
+
+      # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
+      gz-cmake3 = prev.gz-cmake-vendor;
+      gz-sim8 = prev.gz-sim-vendor;
+      gz-common5 = prev.gz-common-vendor;
+      gz-plugin2 = prev.gz-plugin-vendor;
 
       # nix-ros-overlay already does this except that ros_gz_sim got an update
       # and the substitute no longer works! Wonderful stuff 
@@ -257,6 +269,13 @@
                 ros-core
 
                 # at last
+                # ardupilot-gazebo
+                # ardupilot-gz-application
+                # ardupilot-gz-bringup
+                # ardupilot-gz-description
+                # ardupilot-gz-gazebo
+                # ardupilot-sitl-models
+                # ardupilot-msgs
                 # ardupilot-sitl
 
 
