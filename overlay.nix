@@ -1,7 +1,13 @@
 final: prev:
 {
-  ardupilot-dds-tests = final.callPackage ./src/ardupilot/Tools/ros2/ardupilot_dds_tests/package.nix {};
-  ardupilot-msgs = final.callPackage ./src/ardupilot/Tools/ros2/ardupilot_msgs/package.nix {};
-  ardupilot-sitl = final.callPackage ./src/ardupilot/Tools/ros2/ardupilot_sitl/package.nix {};
-  micro-ros-agent = final.callPackage ./src/micro_ros_agent/micro_ros_agent/package.nix {};
+  ardupilot-dds-tests = final.callPackage ./ardupilot-dds-tests.nix {};
+  ardupilot-gazebo = final.callPackage ./ardupilot-gazebo.nix {};
+  ardupilot-gz-application = final.callPackage ./ardupilot-gz-application.nix {};
+  ardupilot-gz-bringup = final.callPackage ./ardupilot-gz-bringup.nix {};
+  ardupilot-gz-description = final.callPackage ./ardupilot-gz-description.nix {};
+  ardupilot-gz-gazebo = final.callPackage ./ardupilot-gz-gazebo.nix {};
+  ardupilot-msgs = final.callPackage ./ardupilot-msgs.nix {};
+  ardupilot-sitl = final.callPackage ./ardupilot-sitl.nix {};
+  ardupilot-sitl-models = final.callPackage ./ardupilot-sitl-models.nix {};
+  micro-ros-agent = final.callPackage ./micro-ros-agent.nix {};
 }

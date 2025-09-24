@@ -34,6 +34,13 @@
   outputs = { self, nixpkgs, flake-utils, nix-ros-overlay, ros2nix, nixgl }:
   let
     forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
+
+    applyDistroOverlay =
+      rosOverlay: rosPackages:
+      rosPackages
+      // builtins.mapAttrs (
+        rosDistro: rosPkgs: if rosPkgs ? overrideScope then rosPkgs.overrideScope rosOverlay else rosPkgs
+      ) rosPackages;
   in
   {
     # we need to export micro-xrce-dds-gen so that we could call the
@@ -65,21 +72,45 @@
       micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
     };
-    overlays.rosDeps = final: prev: {
-      # TODO: why were these special?
-      micro-ros-agent = prev.callPackage ./pkgs/micro-ros-agent {};
-      # inject micro-xrce-dds-agent dep
-      # micro-ros-agent = 
-      ardupilot-gazebo = prev.callPackage ./pkgs/ardupilot-gazebo {};
-      ardupilot-gz-application = prev.callPackage ./pkgs/ardupilot-gz-application {};
-      ardupilot-gz-bringup = prev.callPackage ./pkgs/ardupilot-gz-bringup {};
-      ardupilot-gz-description = prev.callPackage ./pkgs/ardupilot-gz-description {};
-      ardupilot-gz-gazebo = prev.callPackage ./pkgs/ardupilot-gz-gazebo {};
-      ardupilot-sitl-models = prev.callPackage ./pkgs/ardupilot-sitl-models {};
-      # ardupilot-dds-tests = super.callPackage ./ardupilot-dds-tests.nix {};
-      ardupilot-msgs = prev.callPackage ./pkgs/ardupilot-msgs {};
-      ardupilot-sitl = prev.callPackage ./pkgs/ardupilot-sitl {};
+#     overlays.rosDeps = final: prev: {
+#       # TODO: why were these special?
+#       micro-ros-agent = prev.callPackage ./pkgs/micro-ros-agent {};
+#       # inject micro-xrce-dds-agent dep
+#       # micro-ros-agent = 
+#       ardupilot-gazebo = prev.callPackage ./pkgs/ardupilot-gazebo {};
+#       ardupilot-gz-application = prev.callPackage ./pkgs/ardupilot-gz-application {};
+#       ardupilot-gz-bringup = prev.callPackage ./pkgs/ardupilot-gz-bringup {};
+#       ardupilot-gz-description = prev.callPackage ./pkgs/ardupilot-gz-description {};
+#       ardupilot-gz-gazebo = prev.callPackage ./pkgs/ardupilot-gz-gazebo {};
+#       ardupilot-sitl-models = prev.callPackage ./pkgs/ardupilot-sitl-models {};
+#       # ardupilot-dds-tests = super.callPackage ./ardupilot-dds-tests.nix {};
+#       ardupilot-msgs = prev.callPackage ./pkgs/ardupilot-msgs {};
+#       ardupilot-sitl = prev.callPackage ./pkgs/ardupilot-sitl {};
+# 
+#       # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
+#       gz-cmake3 = prev.gz-cmake-vendor;
+#       gz-sim8 = prev.gz-sim-vendor;
+#       gz-common5 = prev.gz-common-vendor;
+#       gz-plugin2 = prev.gz-plugin-vendor;
+# 
+#       # nix-ros-overlay already does this except that ros_gz_sim got an update
+#       # and the substitute no longer works! Wonderful stuff 
+#       ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
+#         postPatch ? "", ...
+#       }: {
+#         # This launch file attempts to run the gz tool with a Ruby interpreter, but
+#         # in our case it is an regular executable because it is wrapped.
+#         # TODO: perhaps just create a regular patch instead of this
+#         # substituteInPlace stuff
+#         postPatch = postPatch + ''
+#           substituteInPlace launch/gz_sim.launch.py.in \
+#             --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
+#             --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
+#         '';
+#       });
+#     };
 
+    overlays.rosFixese = final: prev: {
       # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
       gz-cmake3 = prev.gz-cmake-vendor;
       gz-sim8 = prev.gz-sim-vendor;
@@ -102,16 +133,35 @@
         '';
       });
     };
+
     # I don't remember where I found this it'd be nice to figure that out
-    overlays.rosDistroOverlays = let
-      applyDistroOverlay =
-        rosOverlay: rosPackages:
-        rosPackages
-        // builtins.mapAttrs (
-          rosDistro: rosPkgs: if rosPkgs ? overrideScope then rosPkgs.overrideScope rosOverlay else rosPkgs
-        ) rosPackages;
-    in final: prev: {
-      rosPackages = applyDistroOverlay self.overlays.rosDeps prev.rosPackages;
+    overlays.rosOverlay = final: prev: {
+      rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
+    };
+    overlays.rosFixes = final: prev: {
+      rospackages = applyDistroOverlay (final: prev: {
+        # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
+        gz-cmake3 = prev.gz-cmake-vendor;
+        gz-sim8 = prev.gz-sim-vendor;
+        gz-common5 = prev.gz-common-vendor;
+        gz-plugin2 = prev.gz-plugin-vendor;
+
+        # nix-ros-overlay already does this except that ros_gz_sim got an update
+        # and the substitute no longer works! Wonderful stuff 
+        ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
+          postPatch ? "", ...
+        }: {
+          # This launch file attempts to run the gz tool with a Ruby interpreter, but
+          # in our case it is an regular executable because it is wrapped.
+          # TODO: perhaps just create a regular patch instead of this
+          # substituteInPlace stuff
+          postPatch = postPatch + ''
+            substituteInPlace launch/gz_sim.launch.py.in \
+              --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
+              --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
+          '';
+        });
+      }) prev.rosPackages;
     };
 
     devShells = forAllSystems (system:
@@ -122,7 +172,8 @@
             nix-ros-overlay.overlays.default
             nixgl.overlay
             self.overlays.regularDeps
-            self.overlays.rosDistroOverlays
+            self.overlays.rosOverlay
+            self.overlays.rosFixes
           ];
           config.permittedInsecurePackages = [
             "freeimage-3.18.0-unstable-2024-04-18"
@@ -130,6 +181,13 @@
         };
       in
       {
+        generate = pkgs.mkShellNoCC {
+          packages = [
+            pkgs.vcstool
+            ros2nix.packages."${system}".default
+          ];
+        };
+
         default = pkgs.mkShellNoCC {
           packages = [
             # ardupilot won't build with gcc14
