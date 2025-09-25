@@ -43,10 +43,10 @@
       ) rosPackages;
   in
   {
-    # we need to export micro-xrce-dds-gen so that we could call the
-    # build .mitmCache.updateScript
+    # we need to export micro-xrce-dds-gen so that we can build
+    # .mitmCache.updateScript
     #
-    # we also need ardupilot-sitl on it's own for ease of debugging the build
+    # we have ardupilot-sitl on it's own for ease of debugging the build
     packages.x86_64-linux = let
       pkgs = import nixpkgs {
         system = "x86_64-linux";
@@ -75,10 +75,9 @@
     overlays.rosOverlay = final: prev: {
       rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
     };
-    # the auto-generated ros packages are a bit broken so we use this overlay to
-    # fix the builds
+    # the auto-generated ros packages are a bit broken so we apply some fixes
     # TODO: why does the applyDistroOverlay "final'" and "prev'" not have some
-    # of pkgs? i.e. micro-xrce-dds-gen & fetchFromGitHub
+    # of pkgs? e.g. micro-xrce-dds-gen & fetchFromGitHub
     overlays.rosFixes = final: prev: {
       rosPackages = applyDistroOverlay (final': prev': {
         ardupilot-sitl = prev'.ardupilot-sitl.overrideAttrs (finalAttrs: previousAttrs: {
@@ -138,13 +137,6 @@
             buildInputs = previousAttrs.buildInputs ++ [
               prev'.ament-lint-auto # missing dependency (TODO: submit a patch?)
             ];
-        });
-
-        ardupilot-gz-bringup = prev'.ardupilot-gz-bringup.overrideAttrs (finalAttrs: previousAttrs: {
-          propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
-            # TODO: why in the world is this not a declared input already?
-            prev'.rviz2
-          ];
         });
 
         # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
@@ -224,6 +216,9 @@
                 launch
                 launch-pytest
                 launch-ros
+
+                sdformat-urdf
+                rviz2
 
                 # at last
                 # TODO: ardupilot-gz-bringup doesn't properly declare it's
