@@ -53,102 +53,109 @@
         overlays = [
           nix-ros-overlay.overlays.default
           self.overlays.regularDeps
-          self.overlays.rosDistroOverlays
+          self.overlays.rosOverlay
+          self.overlays.rosFixes
         ];
       };
     in {
       micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
 
       ardupilot-sitl = pkgs.rosPackages.jazzy.ardupilot-sitl;
-      ardupilot-msgs = pkgs.rosPackages.jazzy.ardupilot-msgs;
     };
 
     overlays.regularDeps = final: prev: {
       # micro-ros-agent deps
-      fast-dds = prev.callPackage ./pkgs/fast-dds {};
-      fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
-      micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
-      micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
-      micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
-      micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
+      fast-dds = final.callPackage ./pkgs/fast-dds {};
+      fast-cdr = final.callPackage ./pkgs/fast-cdr {};
+      micro-cdr = final.callPackage ./pkgs/micro-cdr {};
+      micro-xrce-dds-client = final.callPackage ./pkgs/micro-xrce-dds-client {};
+      micro-xrce-dds-agent = final.callPackage ./pkgs/micro-xrce-dds-agent {};
+      micro-xrce-dds-gen = final.callPackage ./pkgs/micro-xrce-dds-gen {};
     };
-#     overlays.rosDeps = final: prev: {
-#       # TODO: why were these special?
-#       micro-ros-agent = prev.callPackage ./pkgs/micro-ros-agent {};
-#       # inject micro-xrce-dds-agent dep
-#       # micro-ros-agent = 
-#       ardupilot-gazebo = prev.callPackage ./pkgs/ardupilot-gazebo {};
-#       ardupilot-gz-application = prev.callPackage ./pkgs/ardupilot-gz-application {};
-#       ardupilot-gz-bringup = prev.callPackage ./pkgs/ardupilot-gz-bringup {};
-#       ardupilot-gz-description = prev.callPackage ./pkgs/ardupilot-gz-description {};
-#       ardupilot-gz-gazebo = prev.callPackage ./pkgs/ardupilot-gz-gazebo {};
-#       ardupilot-sitl-models = prev.callPackage ./pkgs/ardupilot-sitl-models {};
-#       # ardupilot-dds-tests = super.callPackage ./ardupilot-dds-tests.nix {};
-#       ardupilot-msgs = prev.callPackage ./pkgs/ardupilot-msgs {};
-#       ardupilot-sitl = prev.callPackage ./pkgs/ardupilot-sitl {};
-# 
-#       # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
-#       gz-cmake3 = prev.gz-cmake-vendor;
-#       gz-sim8 = prev.gz-sim-vendor;
-#       gz-common5 = prev.gz-common-vendor;
-#       gz-plugin2 = prev.gz-plugin-vendor;
-# 
-#       # nix-ros-overlay already does this except that ros_gz_sim got an update
-#       # and the substitute no longer works! Wonderful stuff 
-#       ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
-#         postPatch ? "", ...
-#       }: {
-#         # This launch file attempts to run the gz tool with a Ruby interpreter, but
-#         # in our case it is an regular executable because it is wrapped.
-#         # TODO: perhaps just create a regular patch instead of this
-#         # substituteInPlace stuff
-#         postPatch = postPatch + ''
-#           substituteInPlace launch/gz_sim.launch.py.in \
-#             --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
-#             --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
-#         '';
-#       });
-#     };
-
-    overlays.rosFixese = final: prev: {
-      # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
-      gz-cmake3 = prev.gz-cmake-vendor;
-      gz-sim8 = prev.gz-sim-vendor;
-      gz-common5 = prev.gz-common-vendor;
-      gz-plugin2 = prev.gz-plugin-vendor;
-
-      # nix-ros-overlay already does this except that ros_gz_sim got an update
-      # and the substitute no longer works! Wonderful stuff 
-      ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
-        postPatch ? "", ...
-      }: {
-        # This launch file attempts to run the gz tool with a Ruby interpreter, but
-        # in our case it is an regular executable because it is wrapped.
-        # TODO: perhaps just create a regular patch instead of this
-        # substituteInPlace stuff
-        postPatch = postPatch + ''
-          substituteInPlace launch/gz_sim.launch.py.in \
-            --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
-            --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
-        '';
-      });
-    };
-
-    # I don't remember where I found this it'd be nice to figure that out
     overlays.rosOverlay = final: prev: {
       rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
     };
+    # the auto-generated ros packages are a bit broken so we use this overlay to
+    # fix the builds
+    # TODO: why does the applyDistroOverlay "final'" and "prev'" not have some
+    # of pkgs? i.e. micro-xrce-dds-gen & fetchFromGitHub
     overlays.rosFixes = final: prev: {
-      rospackages = applyDistroOverlay (final: prev: {
+      rosPackages = applyDistroOverlay (final': prev': {
+        ardupilot-sitl = prev'.ardupilot-sitl.overrideAttrs (finalAttrs: previousAttrs: {
+          # the ardupilot build system is contained within a submodule...
+          src = previousAttrs.src.override {
+            sha256 = "cSCgsOBVAXJDEG/WWxbYDA8kvwOHLm2JwwmxabB2sIg=";
+            fetchSubmodules = true;
+          };
+
+          # some of the build inputs aren't declared in the package.xml
+          nativeBuildInputs = previousAttrs.nativeBuildInputs ++ [
+            # can we avoid this somehow?
+            ((prev'.callPackage ./pkgs/ardupilot-sitl/fake-git.nix { }) finalAttrs.src)
+
+            # prev'.python3
+            prev.micro-xrce-dds-gen
+            # TODO: submit an ardupilot patch to include pexpect in package.xml
+            # https://github.com/ArduPilot/ardupilot/issues/26811#issuecomment-2913010021
+            prev'.python3Packages.pexpect
+          ];
+
+          # setting sourceRoot makes only sourceRoot writable but the ardupilot build
+          # process expects to have the whole source directory writable. To be frank I'm
+          # not sure if it's the build itself or just the shebang patching.
+          #
+          # I previously tried to chmod in preBuild but that gives permission denied
+          # errors. Is chmod explictly allowed in postUnpack or does
+          # "dontMakeSourcesWritable" allow us to chmod?
+          #
+          # https://discourse.nixos.org/t/unpack-phase-permission-denied/13382/4
+          dotMakeSourcesWritable = true;
+          postUnpack = ''
+            chmod -R +w /build/source
+          '';
+
+          postPatch = ''
+            # silly patch bc otherwise compiler rejects isn't happy
+            substituteInPlace /build/source/libraries/AP_Scripting/generator/src/main.c \
+              --replace-fail 'char *var_type_name;' 'char *var_type_name = NULL;'
+
+            patchShebangs /build/source/waf # why so long?
+          '';
+        });
+
+        # adjust micro-ros-agent to use our build of micro-xrce-dds-agent
+        micro-ros-agent = prev'.micro-ros-agent.overrideAttrs (finalAttrs: previousAttrs: {
+            cmakeFlags = [
+              # use local versions of everything
+              "-DMICROROSAGENT_SUPERBUILD=OFF"
+              "-DUAGENT_USE_SYSTEM_LOGGER=ON"
+            ];
+
+            propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
+              prev.micro-xrce-dds-agent
+            ];
+
+            buildInputs = previousAttrs.buildInputs ++ [
+              prev'.ament-lint-auto # missing dependency (TODO: submit a patch?)
+            ];
+        });
+
+        ardupilot-gz-bringup = prev'.ardupilot-gz-bringup.overrideAttrs (finalAttrs: previousAttrs: {
+          propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
+            # TODO: why in the world is this not a declared input already?
+            prev'.rviz2
+          ];
+        });
+
         # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
-        gz-cmake3 = prev.gz-cmake-vendor;
-        gz-sim8 = prev.gz-sim-vendor;
-        gz-common5 = prev.gz-common-vendor;
-        gz-plugin2 = prev.gz-plugin-vendor;
+        gz-cmake3 = prev'.gz-cmake-vendor;
+        gz-sim8 = prev'.gz-sim-vendor;
+        gz-common5 = prev'.gz-common-vendor;
+        gz-plugin2 = prev'.gz-plugin-vendor;
 
         # nix-ros-overlay already does this except that ros_gz_sim got an update
         # and the substitute no longer works! Wonderful stuff 
-        ros-gz-sim = prev.ros-gz-sim.overrideAttrs ({
+        ros-gz-sim = prev'.ros-gz-sim.overrideAttrs ({
           postPatch ? "", ...
         }: {
           # This launch file attempts to run the gz tool with a Ruby interpreter, but
@@ -190,9 +197,6 @@
 
         default = pkgs.mkShellNoCC {
           packages = [
-            # ardupilot won't build with gcc14
-            pkgs.gcc13Stdenv.cc
-
             pkgs.colcon
 
             pkgs.vcstool
@@ -202,15 +206,6 @@
             pkgs.which
             pkgs.less
             pkgs.vim
-            ros2nix.packages."${system}".default
-
-            # pkgs.micro-xrce-dds-agent
-            # pkgs.micro-xrce-dds-client
-            # pkgs.fast-dds
-
-            # for building MicroXRCEDDSGen
-            # pkgs.gradle
-            # pkgs.jdk11
             
             # for building & using the sitl
             # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
@@ -222,166 +217,27 @@
             # don't ask my why "Intel" corresponds to amdgpu
             pkgs.nixgl.nixGLIntel
 
-            pkgs.python3Packages.ultralytics
-            pkgs.python3Packages.openvino
-            pkgs.opencv
-
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
                 ros-core
-
-                ament-black
-                ament-cmake
-                ament-cmake-black
-                ament-cmake-copyright
-                ament-cmake-cppcheck
-                ament-cmake-cpplint
-                ament-cmake-flake8
-                ament-cmake-lint-cmake
-                ament-cmake-mypy
-                ament-cmake-pclint
-                ament-cmake-pep257
-                ament-cmake-pycodestyle
-                ament-cmake-pytest
-                ament-cmake-python
-                ament-cmake-uncrustify
-                ament-cmake-xmllint
-                ament-copyright
-                ament-index-python
-                ament-lint-auto
-                ament-lint-common
-                ament-pep257
-                ament-uncrustify
-                ament-xmllint
-                builtin-interfaces
-                geographic-msgs
-                geometry-msgs
-                pkgs.gst_all_1.gst-libav
-                pkgs.gst_all_1.gst-plugins-bad
-                pkgs.gst_all_1.gst-plugins-base
-                pkgs.gst_all_1.gstreamer
-                pkgs.gz-cmake_3
-                gz-common-vendor
-                gz-plugin-vendor
-                gz-sim-vendor
+                # "ros2 launch"
                 launch
                 launch-pytest
                 launch-ros
-                micro-ros-agent
-                micro-ros-msgs
-                pkgs.opencv
-                pkgs.opencv.cxxdev
-                pkgs.python3Packages.geopy
-                pkgs.python3Packages.pytest
-                pkgs.python3Packages.scipy
-                pkgs.rapidjson
-                rclpy
-                robot-state-publisher
-                ros-gz-bridge
-                ros-gz-sim
-                rosgraph-msgs
-                rosidl-default-generators
-                rosidl-default-runtime
-                sdformat-urdf
-                sensor-msgs
-                pkgs.socat
-                std-msgs
-                tf2-msgs
-                topic-tools
-
-                tf2-ros
-
-                # these are the deps that ros2nix missed?
-                ament-cmake-core
-                python-cmake-module
-                micro-ros-agent
-                python3Packages.pexpect
-                rviz2
-
-                # gazebo?
-                # https://github.com/lopsided98/nix-ros-overlay/pull/591
-                # https://github.com/lopsided98/nix-ros-overlay/issues/638
-                # ros-gz
-                ros-gz-sim
-                ros-gz-sim-demos
-                sdformat-urdf
-                # from https://github.com/lopsided98/nix-ros-overlay/pull/422
-                gz-cmake-vendor
-                gz-common-vendor
-                gz-dartsim-vendor
-                gz-fuel-tools-vendor
-                gz-gui-vendor
-                gz-launch-vendor
-                gz-math-vendor
-                gz-msgs-vendor
-                gz-ogre-next-vendor
-                gz-physics-vendor
-                gz-plugin-vendor
-                gz-rendering-vendor
-                gz-sensors-vendor
-                gz-sim-vendor
-                gz-tools-vendor
-                gz-transport-vendor
-                gz-utils-vendor
-                ros-gz
-                ros-core
 
                 # at last
-                # ardupilot-gazebo
-                # ardupilot-gz-application
-                # ardupilot-gz-bringup
-                # ardupilot-gz-description
-                # ardupilot-gz-gazebo
-                # ardupilot-sitl-models
-                # ardupilot-msgs
-                # ardupilot-sitl
-
-
-                # gazebo?
-                ros-gz
-                geometry-msgs
-                turtlebot4-desktop
-                turtlebot4-simulator
-                slam-toolbox
-                nav2-minimal-tb4-sim
-                nav2-minimal-tb3-sim
-                # rqt metapackages
-                rqt-common-plugins
-                rqt-tf-tree
-                tf2-tools
-
-                 geometry-msgs
-                 turtlebot4-desktop
-                 turtlebot4-simulator
-                 slam-toolbox
-                 nav2-minimal-tb4-sim
-                 nav2-minimal-tb3-sim
-
-                # for our node
-                rclpy
-                pybind11-vendor
-                rqt-graph
-
-                # for yolo-ros
-                # really we should just package yolo-ros properly
-                # or perhaps use our own object detection node since yolo-ros
-                # does a bit more than we need
-                # geometry-msgs
-                # std-msgs
-                # ament-cmake
-                # ament-copyright
-                # ament-flake8
-                # ament-pep257
-                # pkgs.python3Packages.pytest
-                cv-bridge
-                # rclpy
-                # sensor-msgs
-                # std-srvs
-                # yolo-ros's python deps
-                # pkgs.python3Packages.numpy
-                # pkgs.python3Packages.opencv-python
-                # pkgs.python3Packages.typing-extensions
-                # pkgs.python3Packages.lap
+                # TODO: ardupilot-gz-bringup doesn't properly declare it's
+                # dependencies so we're forced to manually list of all the
+                # required packages
+                ardupilot-gazebo
+                ardupilot-gz-application
+                ardupilot-gz-bringup
+                ardupilot-gz-description
+                ardupilot-gz-gazebo
+                ardupilot-msgs
+                ardupilot-sitl
+                ardupilot-sitl-models
+                micro-ros-agent
               ];
             })
           ];
