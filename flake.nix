@@ -65,12 +65,12 @@
 
     overlays.regularDeps = final: prev: {
       # micro-ros-agent deps
-      fast-dds = final.callPackage ./pkgs/fast-dds {};
-      fast-cdr = final.callPackage ./pkgs/fast-cdr {};
-      micro-cdr = final.callPackage ./pkgs/micro-cdr {};
-      micro-xrce-dds-client = final.callPackage ./pkgs/micro-xrce-dds-client {};
-      micro-xrce-dds-agent = final.callPackage ./pkgs/micro-xrce-dds-agent {};
-      micro-xrce-dds-gen = final.callPackage ./pkgs/micro-xrce-dds-gen {};
+      fast-dds = prev.callPackage ./pkgs/fast-dds {};
+      fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
+      micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
+      micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
+      micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
+      micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
     };
     overlays.rosOverlay = final: prev: {
       rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
