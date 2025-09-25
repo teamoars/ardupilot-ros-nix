@@ -91,7 +91,7 @@
           # some of the build inputs aren't declared in the package.xml
           nativeBuildInputs = previousAttrs.nativeBuildInputs ++ [
             # can we avoid this somehow?
-            ((prev'.callPackage ./pkgs/ardupilot-sitl/fake-git.nix { }) finalAttrs.src)
+            ((prev'.callPackage ./fake-git.nix { }) finalAttrs.src)
 
             # prev'.python3
             prev.micro-xrce-dds-gen
