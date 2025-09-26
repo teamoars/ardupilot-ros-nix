@@ -6,13 +6,13 @@ First enter the nix development environment:
 nix develop -i -k TERM -k HOME -k XAUTHORITY -k DISPLAY
 ```
 
-Then you can use the regular ardupilot launch file as usual:
+Then you can use the ardupilot launch file as usual:
 
 ```bash
 env "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_PREFIX_PATH}/share" "GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_PLUGIN_PATH}:${CMAKE_PREFIX_PATH}/lib" nixGLIntel ros2 launch ardupilot_gz_bringup iris_runway.launch.py
 ```
 
-note: we set GZ_SIM_RESOURCE_PATH & GZ_SIM_SYSTEM_PLUGIN_PATH to work around an issue with how environment variables are sourced in the ardupilot ros packages.
+(note: we set GZ_SIM_RESOURCE_PATH & GZ_SIM_SYSTEM_PLUGIN_PATH to work around an issue with how environment variables are sourced in the ardupilot ros packages)
 
 In a separate terminal bring up mavproxy:
 
@@ -41,8 +41,9 @@ nix develop --max-jobs 0 --builders 'ssh://username@host?ssh-key=/home/user/.ssh
 
 The ardupilot ros2 packages have both .dsv and .sh colcon hooks. When built with colcon the standard way (vcs import ..., colcon build), the .dsv files are used and everything works. But for whatever reason nix-ros-overlay uses .sh files instead and things stop working because the .sh hooks we not kept up to date with the .dsv files!
 
-https://discourse.openrobotics.org/t/the-forgotten-gem-that-is-environment-hooks-and-dsv/41581
-https://github.com/ros2/ros2/issues/1613#issuecomment-2596447764
+- https://discourse.openrobotics.org/t/the-forgotten-gem-that-is-environment-hooks-and-dsv/41581
+
+- https://github.com/ros2/ros2/issues/1613#issuecomment-2596447764
 
 ## running nix develop with a minimal environment
 
