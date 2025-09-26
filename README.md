@@ -1,35 +1,65 @@
-# to update micro-xrce-dds-gen deps
+# launching iris runway
 
-nix build .#micro-xrce-dds-gen.mitmCache.updateScript
+First enter the nix development environment:
 
-./result
+```bash
+nix develop -i -k TERM -k HOME -k XAUTHORITY -k DISPLAY
+```
 
-# initial generation of nix packages
+Then you can use the regular ardupilot launch file as usual:
 
-mkdir src
+```bash
+env "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_PREFIX_PATH}/share" "GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_PLUGIN_PATH}:${CMAKE_PREFIX_PATH}/lib" nixGLIntel ros2 launch ardupilot_gz_bringup iris_runway.launch.py
+```
 
-vcs import --input ros2_gz.repos src
+note: we set GZ_SIM_RESOURCE_PATH & GZ_SIM_SYSTEM_PLUGIN_PATH to work around an issue with how environment variables are sourced in the ardupilot ros packages.
 
-ros2nix --fetch --nixfmt --no-overlay --no-shell --output-as-nix-pkg-name $(find -name package.xml)
+In a separate terminal bring up mavproxy:
 
-The whole list is available at: https://raw.githubusercontent.com/ArduPilot/ardupilot_gz/main/ros2_gz.repos
-
-Some of the dependencies there are already in the ros2 package repos so there's no need to fetch them
-
-# launching with gpu acceleration
-
-nixGLIntel ros2 launch ardupilot_gz_bringup iris_runway.launch.py
-
+```bash
 mavproxy.py
+```
 
-# running nix develop with a minimal environment
+# development notes
+
+## to update micro-xrce-dds-gen deps
+
+``` bash
+nix build .#micro-xrce-dds-gen.mitmCache.updateScript
+./result
+```
+
+## using a remote builder with nix develop
+
+```bash
+nix develop --max-jobs 0 --builders 'ssh://username@host?ssh-key=/home/user/.ssh/id_ed25519'
+```
+
+--max-jobs tells nix to not spawn any local jobs so that the entirety of the work is offloaded to the builders.
+
+## env var breakage
+
+The ardupilot ros2 packages have both .dsv and .sh colcon hooks. When built with colcon the standard way (vcs import ..., colcon build), the .dsv files are used and everything works. But for whatever reason nix-ros-overlay uses .sh files instead and things stop working because the .sh hooks we not kept up to date with the .dsv files!
+
+https://discourse.openrobotics.org/t/the-forgotten-gem-that-is-environment-hooks-and-dsv/41581
+https://github.com/ros2/ros2/issues/1613#issuecomment-2596447764
+
+## running nix develop with a minimal environment
 
 For maximum purity, we ignore the environment with "-i" but whitelist a few env vars so that all of the graphical applications can launch correctly.
 
-nix develop --max-jobs 0 --builders 'ssh://jakub@10.10.0.3?ssh-key=/home/jakub/.ssh/id_ed25519 x86_64-linux' -i -k TERM -k HOME -k XAUTHORITY -k DISPLAY
+```bash
+nix develop -i -k TERM -k HOME -k XAUTHORITY -k DISPLAY
+```
 
-# generating ardupilot_sitl packages
+## generating ardupilot_sitl packages
 
 in a "nix develop #generate" env:
 
+```bash
 ./generate.sh
+```
+
+The list of all packages required by ardupilot is here: https://raw.githubusercontent.com/ArduPilot/ardupilot_gz/main/ros2_gz.repos
+
+Some of the dependencies there are already in the ros2 package repos so there's no need to fetch them

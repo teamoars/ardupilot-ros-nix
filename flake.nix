@@ -184,6 +184,8 @@
           packages = [
             pkgs.vcstool
             ros2nix.packages."${system}".default
+
+            pkgs.nix-tree
           ];
         };
 
