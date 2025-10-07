@@ -64,3 +64,17 @@ in a "nix develop #generate" env:
 The list of all packages required by ardupilot is here: https://raw.githubusercontent.com/ArduPilot/ardupilot_gz/main/ros2_gz.repos
 
 Some of the dependencies there are already in the ros2 package repos so there's no need to fetch them
+
+# enable camera streaming
+
+ardupilot-gazebo streams camera feeds over rtp but the streaming needs to be toggled on:
+
+```
+gz topic -t /camera-1/enable_streaming -m gz.msgs.Boolean -p "data: 1"
+```
+
+To toggle all cameras, use the supplied script:
+
+```
+./enable_streaming.sh
+```

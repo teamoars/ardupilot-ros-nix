@@ -214,6 +214,7 @@
             # could be sped up:
             # > nix-flamegraph -t '#devShells.x86_64-linux.default'
             # nix-flamegraph.packages.${system}.default
+            pkgs.jq
             
             # for building & using the sitl
             # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
@@ -221,12 +222,27 @@
             pkgs.git
             pkgs.rsync
             pkgs.mavproxy
+            # otherwise mavproxy crashes
+            # related: https://discourse.nixos.org/t/fritzing-no-gsettings-schemas-are-installed-on-the-system/64603
+            pkgs.gsettings-desktop-schemas
             pkgs.mission-planner
             pkgs.mavlink-server
             pkgs.zenoh
             # don't ask me why "Intel" corresponds to amdgpu
             # pkgs.nixgl.nixGLIntel
             pkgs.nixgl.nixGLNvidia
+
+            # ardupilot-gazebo needs gst available
+            # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
+            pkgs.gst_all_1.gstreamer
+            # Common plugins like "filesrc" to combine within e.g. gst-launch
+            pkgs.gst_all_1.gst-plugins-base
+            # Specialized plugins separated by quality
+            pkgs.gst_all_1.gst-plugins-good
+            pkgs.gst_all_1.gst-plugins-bad
+            pkgs.gst_all_1.gst-plugins-ugly
+            # Plugins to reuse ffmpeg to play almost every video format
+            pkgs.gst_all_1.gst-libav
 
             # ardupilot-gazebo needs gst available
             # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
