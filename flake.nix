@@ -71,6 +71,8 @@
       micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
       micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
+
+      mavlink-server = prev.callPackage ./pkgs/mavlink-server {};
     };
     overlays.rosOverlay = final: prev: {
       rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
@@ -208,6 +210,8 @@
             pkgs.rsync
             pkgs.mavproxy
             pkgs.mission-planner
+            pkgs.mavlink-server
+            pkgs.zenoh
             # don't ask my why "Intel" corresponds to amdgpu
             pkgs.nixgl.nixGLIntel
 
