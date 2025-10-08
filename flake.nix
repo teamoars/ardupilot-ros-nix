@@ -192,6 +192,14 @@
         };
 
         default = pkgs.mkShellNoCC {
+          # Otherwise the spawned tmux will be the system-wide tmux server and
+          # then whenever a tmux session is spawned outside of the devshell, it
+          # will use the devshell's bash?! why can't nix just have a
+          # containerized devshell like guix :(
+          shellHook = ''
+            export TMUX_TMPDIR="$TMPDIR"
+          '';
+
           packages = [
             pkgs.colcon
 
