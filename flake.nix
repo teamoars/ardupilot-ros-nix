@@ -74,6 +74,13 @@
 
       mavlink-server = prev.callPackage ./pkgs/mavlink-server {};
     };
+    # make nvidia drivers work without auto-detection
+    overlays.nixglFix = final: prev: {
+      nixgl = prev.nixgl.override {
+        nvidiaVersion = "570.190";
+        nvidiaHash = "sha256-qGBYp+0gO/dp6gWycP7SeURfXU6DPq/v36f6Rf6quPw=";
+      };
+    };
     overlays.rosOverlay = final: prev: {
       rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
     };
@@ -172,12 +179,16 @@
           overlays = [
             nix-ros-overlay.overlays.default
             nixgl.overlay
+            self.overlays.nixglFix
             self.overlays.regularDeps
             self.overlays.rosOverlay
             self.overlays.rosFixes
           ];
           config.permittedInsecurePackages = [
             "freeimage-3.18.0-unstable-2024-04-18"
+          ];
+          config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
+             "nvidia"
           ];
         };
       in
@@ -220,8 +231,21 @@
             pkgs.mission-planner
             pkgs.mavlink-server
             pkgs.zenoh
-            # don't ask my why "Intel" corresponds to amdgpu
-            pkgs.nixgl.nixGLIntel
+            # don't ask me why "Intel" corresponds to amdgpu
+            # pkgs.nixgl.nixGLIntel
+            pkgs.nixgl.nixGLNvidia
+
+            # ardupilot-gazebo needs gst available
+            # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
+            pkgs.gst_all_1.gstreamer
+            # Common plugins like "filesrc" to combine within e.g. gst-launch
+            pkgs.gst_all_1.gst-plugins-base
+            # Specialized plugins separated by quality
+            pkgs.gst_all_1.gst-plugins-good
+            pkgs.gst_all_1.gst-plugins-bad
+            pkgs.gst_all_1.gst-plugins-ugly
+            # Plugins to reuse ffmpeg to play almost every video format
+            pkgs.gst_all_1.gst-libav
 
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
