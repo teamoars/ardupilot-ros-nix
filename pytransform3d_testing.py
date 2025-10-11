@@ -18,6 +18,7 @@ import numpy as np
 from pytransform3d.plot_utils import Frame, Camera, make_3d_axis, plot_vector
 from pytransform3d.rotations import matrix_from_euler, active_matrix_from_extrinsic_roll_pitch_yaw
 from pytransform3d.transformations import transform_from, invert_transform, transform
+from pytransform3d.plot_utils._artists import Arrow3D
 
 # all of the cameras currently have a common P
 # TODO: 'cameras' should have dimensions inside them
@@ -136,6 +137,12 @@ if __name__ == "__main__":
             )
 
     from pprint import pprint
-    pprint(t)
+    pprint(dir(ax))
+    pprint(ax.get_children())
+    vector = next(child for child in ax.get_children() if isinstance(child, Arrow3D))
+    pprint(dir(vector))
+    for child in ax.get_children():
+        if isinstance(child, Arrow3D):
+            vector.remove()
 
     plt.show()
