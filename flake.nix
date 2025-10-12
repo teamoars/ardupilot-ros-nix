@@ -158,22 +158,6 @@
         gz-sim8 = prev'.gz-sim-vendor;
         gz-common5 = prev'.gz-common-vendor;
         gz-plugin2 = prev'.gz-plugin-vendor;
-
-        # nix-ros-overlay already does this except that ros_gz_sim got an update
-        # and the substitute no longer works! Wonderful stuff 
-        ros-gz-sim = prev'.ros-gz-sim.overrideAttrs ({
-          postPatch ? "", ...
-        }: {
-          # This launch file attempts to run the gz tool with a Ruby interpreter, but
-          # in our case it is an regular executable because it is wrapped.
-          # TODO: perhaps just create a regular patch instead of this
-          # substituteInPlace stuff
-          postPatch = postPatch + ''
-            substituteInPlace launch/gz_sim.launch.py.in \
-              --replace-fail "'ruby ' + get_executable_path('gz') + ' sim'" "'gz sim'" \
-              --replace-fail "'ruby ' + get_executable_path('ign') + ' gazebo'" "'ign gazebo'"
-          '';
-        });
       }) prev.rosPackages;
     };
 
