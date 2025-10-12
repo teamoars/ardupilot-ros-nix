@@ -29,9 +29,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+
+    nix-flamegraph = {
+      url = "github:crabdancing/nix-flamegraph";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, nix-ros-overlay, ros2nix, nixgl }:
+  outputs = { self, nixpkgs, flake-utils, nix-ros-overlay, ros2nix, nixgl, nix-flamegraph }:
   let
     forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
@@ -221,6 +226,10 @@
             pkgs.which
             pkgs.less
             pkgs.vim
+            # had attempted to generate a flamegraph to see if 'nix develop'
+            # could be sped up:
+            # > nix-flamegraph -t '#devShells.x86_64-linux.default'
+            # nix-flamegraph.packages.${system}.default
             
             # for building & using the sitl
             # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
