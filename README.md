@@ -69,12 +69,24 @@ Some of the dependencies there are already in the ros2 package repos so there's 
 
 ardupilot-gazebo streams camera feeds over rtp but the streaming needs to be toggled on:
 
-```
+```bash
 gz topic -t /camera-1/enable_streaming -m gz.msgs.Boolean -p "data: 1"
 ```
 
 To toggle all cameras, use the supplied script:
 
-```
+```bash
 ./enable_streaming.sh
+```
+
+# run mavlink-server & zenoh
+
+Open two tmux panes & run the following:
+
+```bash
+mavlink-server --web-server '127.0.0.1:8080' 'udpserver://0.0.0.0:14550' 'zenoh://127.0.0.1:7447'
+```
+
+```bash
+zenohd
 ```
