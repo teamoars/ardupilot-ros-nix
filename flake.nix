@@ -82,8 +82,8 @@
     # make nvidia drivers work without auto-detection
     overlays.nixglFix = final: prev: {
       nixgl = prev.nixgl.override {
-        nvidiaVersion = "570.190";
-        nvidiaHash = "sha256-qGBYp+0gO/dp6gWycP7SeURfXU6DPq/v36f6Rf6quPw=";
+        nvidiaVersion = "570.195.03";
+        nvidiaHash = "sha256-1H3oHZpRNJamCtyc+nL+nhYsZfJyL7lgxPUxvXrF3B4=";
       };
     };
     overlays.rosOverlay = final: prev: {
