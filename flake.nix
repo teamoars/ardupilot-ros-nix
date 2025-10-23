@@ -78,6 +78,8 @@
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
 
       mavlink-server = prev.callPackage ./pkgs/mavlink-server {};
+
+      zenoh-plugin-ros2dds = prev.callPackage ./pkgs/zenoh-plugin-ros2dds {};
     };
     # make nvidia drivers work without auto-detection
     overlays.nixglFix = final: prev: {
@@ -228,6 +230,8 @@
             pkgs.mission-planner
             pkgs.mavlink-server
             pkgs.zenoh
+            # zenoh bridge so that we don't have to deal with ros
+            pkgs.zenoh-plugin-ros2dds
             # don't ask me why "Intel" corresponds to amdgpu
             # pkgs.nixgl.nixGLIntel
             pkgs.nixgl.nixGLNvidia
@@ -244,17 +248,9 @@
             # Plugins to reuse ffmpeg to play almost every video format
             pkgs.gst_all_1.gst-libav
 
-            # ardupilot-gazebo needs gst available
-            # Video/Audio data composition framework tools like "gst-inspect", "gst-launch" ...
-            pkgs.gst_all_1.gstreamer
-            # Common plugins like "filesrc" to combine within e.g. gst-launch
-            pkgs.gst_all_1.gst-plugins-base
-            # Specialized plugins separated by quality
-            pkgs.gst_all_1.gst-plugins-good
-            pkgs.gst_all_1.gst-plugins-bad
-            pkgs.gst_all_1.gst-plugins-ugly
-            # Plugins to reuse ffmpeg to play almost every video format
-            pkgs.gst_all_1.gst-libav
+            # a zenoh node that publishes /camera/image
+            pkgs.python3Packages.zenoh
+            pkgs.python3Packages.cyclonedds-python
 
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
@@ -266,6 +262,9 @@
 
                 sdformat-urdf
                 rviz2
+
+                # python script to publish images to zenoh
+                cv-bridge
 
                 # at last
                 # TODO: ardupilot-gz-bringup doesn't properly declare it's
