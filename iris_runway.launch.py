@@ -88,12 +88,12 @@ def generate_launch_description():
     )
 
     # RViz.
-    rviz = Node(
-        package="rviz2",
-        executable="rviz2",
-        arguments=["-d", f'{Path(pkg_project_bringup) / "rviz" / "iris.rviz"}'],
-        condition=IfCondition(LaunchConfiguration("rviz")),
-    )
+#     rviz = Node(
+#         package="rviz2",
+#         executable="rviz2",
+#         arguments=["-d", f'{Path(pkg_project_bringup) / "rviz" / "iris.rviz"}'],
+#         condition=IfCondition(LaunchConfiguration("rviz")),
+#     )
 
     return LaunchDescription(
         [
@@ -103,6 +103,6 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             iris,
-            rviz,
+	    # rviz,
         ]
     )
