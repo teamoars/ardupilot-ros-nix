@@ -19,9 +19,12 @@
 
     ros2nix = {
       url = "github:wentasah/ros2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # the build is failing with:
+      # > configuration error: `project.license` must be valid exactly by one definition (2 matches found):
+      # so we use the upstream nix-ros-overlay for now
+      # inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
-      inputs.nix-ros-overlay.follows = "nix-ros-overlay";
+      # inputs.nix-ros-overlay.follows = "nix-ros-overlay";
     };
 
     nixgl = {
@@ -233,7 +236,7 @@
             # zenoh bridge so that we don't have to deal with ros
             pkgs.zenoh-plugin-ros2dds
             # don't ask me why "Intel" corresponds to amdgpu
-            # pkgs.nixgl.nixGLIntel
+            pkgs.nixgl.nixGLIntel
             pkgs.nixgl.nixGLNvidia
 
             # ardupilot-gazebo needs gst available

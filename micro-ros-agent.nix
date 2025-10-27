@@ -23,8 +23,8 @@ buildRosPackage rec {
   src = fetchFromGitHub {
     owner = "micro-ROS";
     repo = "micro-ROS-Agent";
-    rev = "b9164d08a904580a17c1f22fd46ced977c60e1d7";
-    sha256 = "18bv1v5w2bkfa9krr4jsa5is9xmhqlsyg1vqsihk88179gjsrwjf";
+    rev = "52abdf5a9897637b2539cb1c239e1ec4fa92e01c";
+    sha256 = "1rxpqcc4rbnmccibs1fmjz97d8v6vs4mg3wgcly1fzz4g6gxis6f";
   };
 
   buildType = "ament_cmake";
