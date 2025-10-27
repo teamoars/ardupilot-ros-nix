@@ -17,7 +17,27 @@ env "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_PREFIX_PATH}/share" "G
 In a separate terminal bring up mavproxy:
 
 ```bash
-mavproxy.py
+mavproxy.py --master 127.0.0.1:14551
+```
+
+# zenoh bringup
+
+first run the zenoh dds bridge:
+
+```bash
+zenoh-bridge-ros2dds
+```
+
+next run mavlink-server:
+
+```bash
+mavlink-server --web-server '127.0.0.1:8080' 'udpserver://0.0.0.0:14550' 'zenoh://127.0.0.1:7447' 'udpclient://127.0.0.1:14552'
+```
+
+finally publish camera images to a zenoh topic:
+
+```bash
+python all.py
 ```
 
 # development notes
@@ -84,7 +104,7 @@ To toggle all cameras, use the supplied script:
 Open two tmux panes & run the following:
 
 ```bash
-mavlink-server --web-server '127.0.0.1:8080' 'udpserver://0.0.0.0:14550' 'zenoh://127.0.0.1:7447'
+mavlink-server --web-server '127.0.0.1:8080' 'udpserver://0.0.0.0:14550' 'zenoh://127.0.0.1:7447' 'udpclient://127.0.0.1:14552'
 ```
 
 ```bash
