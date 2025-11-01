@@ -63,12 +63,21 @@
           self.overlays.regularDeps
           self.overlays.rosOverlay
           self.overlays.rosFixes
+          self.overlays.rosManual
+        ];
+        config.permittedInsecurePackages = [
+          "freeimage-3.18.0-unstable-2024-04-18"
         ];
       };
     in {
       micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
 
       ardupilot-sitl = pkgs.rosPackages.jazzy.ardupilot-sitl;
+
+      gz-waves = pkgs.rosPackages.jazzy.gz-waves;
+      gz-waves-models = pkgs.gz-waves-models;
+
+      ardupilot-sitl-models = pkgs.rosPackages.jazzy.ardupilot-sitl-models;
     };
 
     overlays.regularDeps = final: prev: {
@@ -83,6 +92,13 @@
       mavlink-server = prev.callPackage ./pkgs/mavlink-server {};
 
       zenoh-plugin-ros2dds = prev.callPackage ./pkgs/zenoh-plugin-ros2dds {};
+
+      gz-waves-models = prev.callPackage ./pkgs/gz-waves-models {};
+    };
+    overlays.rosManual = final: prev: {
+      rosPackages = applyDistroOverlay (final: prev: {
+        gz-waves = prev.callPackage ./pkgs/gz-waves {};
+      }) prev.rosPackages;
     };
     # make nvidia drivers work without auto-detection
     overlays.nixglFix = final: prev: {
@@ -176,6 +192,7 @@
             self.overlays.nixglFix
             self.overlays.regularDeps
             self.overlays.rosOverlay
+            self.overlays.rosManual
             self.overlays.rosFixes
           ];
           config.permittedInsecurePackages = [
@@ -196,7 +213,8 @@
           ];
         };
 
-        default = pkgs.mkShellNoCC {
+        # default = pkgs.mkShellNoCC {
+        default = pkgs.mkShell {
           # Otherwise the spawned tmux will be the system-wide tmux server and
           # then whenever a tmux session is spawned outside of the devshell, it
           # will use the devshell's bash?! why can't nix just have a
@@ -255,6 +273,13 @@
             pkgs.python3Packages.zenoh
             pkgs.python3Packages.cyclonedds-python
 
+            # asv_waves_sim deps
+            pkgs.cgal
+            pkgs.gmp
+            pkgs.mpfr
+            pkgs.fftwMpi
+            pkgs.eigen
+
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
                 ros-core
@@ -282,6 +307,21 @@
                 ardupilot-sitl
                 ardupilot-sitl-models
                 micro-ros-agent
+
+                # waves
+                gz-waves
+                pkgs.gz-waves-models
+
+                # asv_waves_sim deps
+                gz-cmake-vendor
+                gz-math-vendor
+                gz-plugin-vendor
+                gz-common-vendor
+                gz-msgs-vendor
+                gz-transport-vendor
+                gz-rendering-vendor
+                gz-sim-vendor
+                sdformat-vendor
               ];
             })
           ];
