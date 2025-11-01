@@ -215,12 +215,39 @@
 
         # default = pkgs.mkShellNoCC {
         default = pkgs.mkShell {
-          # Otherwise the spawned tmux will be the system-wide tmux server and
-          # then whenever a tmux session is spawned outside of the devshell, it
-          # will use the devshell's bash?! why can't nix just have a
-          # containerized devshell like guix :(
           shellHook = ''
+            # Otherwise the spawned tmux will be the system-wide tmux server and
+            # then whenever a tmux session is spawned outside of the devshell, it
+            # will use the devshell's bash?! why can't nix just have a
+            # containerized devshell like guix :(
             export TMUX_TMPDIR="$TMPDIR"
+            
+            # The ardupilot colcon hook has some incompatabilities with
+            # nix-ros-overlay. Their hook is written in an unusual way to work
+            # around an issue with resolving model file paths and I guess
+            # combined with whatever nix-ros-overlay is doing everything breaks.
+            #
+            # Our silly fix is to inject the correct paths here. In the future,
+            # consider submitting a patch upstream to fix this issue properly.
+            export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$CMAKE_PREFIX_PATH/share
+            # NOTE: GZ_SIM_PLUGIN_PATH is used intentionally here
+            export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_PLUGIN_PATH:$CMAKE_PREFIX_PATH/lib
+
+            # asv_waves_sim does not use colcon hook and ask us to manually
+            # set up our env :/
+            #
+            # ensure the model and world files are found
+            MODELS="${pkgs.gz-waves-models}/share/gz-waves-models"
+            PLUGINS="${pkgs.rosPackages.jazzy.gz-waves}"
+            export GZ_SIM_RESOURCE_PATH=\
+            $GZ_SIM_RESOURCE_PATH:\
+            $MODELS/models:\
+            $MODELS/world_models:\
+            $MODELS/worlds
+            # ensure the system plugins are found
+            export GZ_SIM_SYSTEM_PLUGIN_PATH=\
+            $GZ_SIM_SYSTEM_PLUGIN_PATH:\
+            $PLUGINS/lib
           '';
 
           packages = [

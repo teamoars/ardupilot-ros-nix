@@ -18,6 +18,7 @@
   gz-sim-vendor,
   sdformat-vendor,
   gz-ogre-next-vendor,
+  tinyxml-2,
   eigen,
 }:
 buildRosPackage rec {
@@ -52,7 +53,7 @@ buildRosPackage rec {
     "-DBUILD_TESTING=off"
     "-DCMAKE_CXX_STANDARD=17"
   ];
-  dontStrip = true;
+  # dontStrip = true;
   sourceRoot = "${src.name}/gz-waves/";
   buildInputs = [
     ament-cmake
@@ -69,7 +70,9 @@ buildRosPackage rec {
     sdformat-vendor
     # ogre2 is secretly needed
     # the build doesn't fail without it but the visuals break
-    gz-ogre-next-vendor
+    # gz-ogre-next-vendor
+
+    tinyxml-2
   ];
   nativeBuildInputs = [
     cgal
@@ -78,7 +81,7 @@ buildRosPackage rec {
     mpfr
 
     fftwMpi # I think it's this one?
-    eigen # not mentioned in the docs
+    # eigen # not mentioned in the docs
   ];
 
   meta = {
