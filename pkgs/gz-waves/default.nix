@@ -1,5 +1,7 @@
 {
   lib,
+  stdenv,
+  cmake,
   buildRosPackage,
   fetchFromGitHub,
   ament-cmake,
@@ -21,7 +23,8 @@
   tinyxml-2,
   eigen,
 }:
-buildRosPackage rec {
+# buildRosPackage rec {
+stdenv.mkDerivation (finalAttrs: {
   name = "gz-waves";
 
   src = fetchFromGitHub {
@@ -42,21 +45,23 @@ buildRosPackage rec {
   # better solution might be though.
   GZ_VERSION = "harmonic";
 
-
   # TODO: the docs say to build with
   # -DCMAKE_BUILD_TYPE=RelWithDebInfo
   # -DCMAKE_CXX_STANDARD=17
-  buildType = "ament_cmake";
+  # buildType = "ament_cmake";
   # asv_wave_sim docs say to set these
   cmakeFlags = [ 
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
     "-DBUILD_TESTING=off"
     "-DCMAKE_CXX_STANDARD=17"
   ];
-  # dontStrip = true;
-  sourceRoot = "${src.name}/gz-waves/";
+  dontWrapQtApps = true;
+  dontPatchELF = true;
+  dontStrip = true;
+  sourceRoot = "${finalAttrs.src.name}/gz-waves/";
   buildInputs = [
-    ament-cmake
+    # ament-cmake
+    cmake
   ];
   propagatedBuildInputs = [
     gz-cmake-vendor
@@ -71,8 +76,6 @@ buildRosPackage rec {
     # ogre2 is secretly needed
     # the build doesn't fail without it but the visuals break
     # gz-ogre-next-vendor
-
-    tinyxml-2
   ];
   nativeBuildInputs = [
     cgal
@@ -82,10 +85,12 @@ buildRosPackage rec {
 
     fftwMpi # I think it's this one?
     # eigen # not mentioned in the docs
+
+    tinyxml-2
   ];
 
   meta = {
     description = "This package contains plugins that support the simulation of waves and surface vessels in Gazebo.";
     license = with lib.licenses; [ "GPL-3.0" ];
   };
-}
+})
