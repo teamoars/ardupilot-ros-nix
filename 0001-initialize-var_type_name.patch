@@ -1,0 +1,25 @@
+From 472f11236b51121fdf346f5b4ea54673518e6ff4 Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Mon, 22 Sep 2025 23:26:10 -0400
+Subject: [PATCH 1/2] initialize var_type_name
+
+---
+ libraries/AP_Scripting/generator/src/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libraries/AP_Scripting/generator/src/main.c b/libraries/AP_Scripting/generator/src/main.c
+index 2be1179c3d..7292800b89 100644
+--- a/libraries/AP_Scripting/generator/src/main.c
++++ b/libraries/AP_Scripting/generator/src/main.c
+@@ -2082,7 +2082,7 @@ void emit_userdata_method(const struct userdata *data, const struct method *meth
+   }
+ 
+   if (static_cast) {
+-    char *var_type_name;
++    char *var_type_name = NULL;
+     switch (method->return_type.type) {
+       case TYPE_BOOLEAN:
+         var_type_name = "bool";
+-- 
+2.51.0
+

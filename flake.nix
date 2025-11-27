@@ -116,22 +116,42 @@
     overlays.rosFixes = final: prev: {
       rosPackages = applyDistroOverlay (final': prev': {
         ardupilot-sitl = prev'.ardupilot-sitl.overrideAttrs (finalAttrs: previousAttrs: {
-          # the ardupilot build system is contained within a submodule...
+          # the ardupilot build system is contained within a submodule. It might
+          # be possible to use the waf package in nixpkgs instead
           src = previousAttrs.src.override {
             sha256 = "cSCgsOBVAXJDEG/WWxbYDA8kvwOHLm2JwwmxabB2sIg=";
             fetchSubmodules = true;
           };
 
+          # from Ardupilot/Tools/scripts/build_ci.sh
+          GIT_VERSION = "abcdef";
+          GIT_VERSION_EXTENDED = "0123456789abcdef";
+          GIT_VERSION_INT = "15";
+          CHIBIOS_GIT_VERSION = "12345667";
+          # our patch is based in the root of the ardupilot repo but we have
+          # sourceRoot set
+          # https://discourse.nixos.org/t/how-to-apply-patches-with-sourceroot/59727/2
+          patchFlags = [ "-d" "/build/source" "-p1" ];
+          patches = [
+            # gcc complains about uninitialized variables
+            ./0001-initialize-var_type_name.patch
+            # git is quite heavily depended upon in the build process. This
+            # patch is a crude hack to avoid needing "keepDotGit". There is a
+            # patch floating around to properly remove the git depedency
+            # (https://github.com/ArduPilot/ardupilot/pull/22848) but I am not
+            # sure if it's still compatible with newer ardupilot versions
+            ./0002-remove-git-dependency.patch
+          ];
+
           # some of the build inputs aren't declared in the package.xml
           nativeBuildInputs = previousAttrs.nativeBuildInputs ++ [
-            # can we avoid this somehow?
-            ((prev'.callPackage ./fake-git.nix { }) finalAttrs.src)
-
-            # prev'.python3
             prev.micro-xrce-dds-gen
             # TODO: submit an ardupilot patch to include pexpect in package.xml
             # https://github.com/ArduPilot/ardupilot/issues/26811#issuecomment-2913010021
             prev'.python3Packages.pexpect
+            # ardupilot expects to find a 'git' executable even though it
+            # doesn't get used
+            prev.git
           ];
 
           # setting sourceRoot makes only sourceRoot writable but the ardupilot build
@@ -149,10 +169,6 @@
           '';
 
           postPatch = ''
-            # silly patch bc otherwise compiler rejects isn't happy
-            substituteInPlace /build/source/libraries/AP_Scripting/generator/src/main.c \
-              --replace-fail 'char *var_type_name;' 'char *var_type_name = NULL;'
-
             patchShebangs /build/source/waf # why so long?
           '';
         });

@@ -1,0 +1,45 @@
+From 469f53bbc4dee68896287dab39e4ce03f702fc9a Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Thu, 27 Nov 2025 13:34:50 -0500
+Subject: [PATCH 2/2] remove git dependency
+
+---
+ Tools/ardupilotwaf/git_submodule.py | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/Tools/ardupilotwaf/git_submodule.py b/Tools/ardupilotwaf/git_submodule.py
+index f517c33251..0ce5cd208c 100644
+--- a/Tools/ardupilotwaf/git_submodule.py
++++ b/Tools/ardupilotwaf/git_submodule.py
+@@ -37,7 +37,7 @@ from waflib import Context, Logs, Task, Utils, Errors
+ from waflib.Configure import conf
+ from waflib.TaskGen import before_method, feature, taskgen_method
+ 
+-import os.path
++import os
+ import re
+ 
+ class update_submodule(Task.Task):
+@@ -173,9 +173,16 @@ def _git_head_hash(ctx, path, short=False, hash_abbrev=8):
+ 
+ @conf
+ def git_submodule_head_hash(self, name, short=False, hash_abbrev=8):
+-    module_node = self.srcnode.make_node(os.path.join('modules', name))
+-    return _git_head_hash(self, module_node.abspath(), short=short, hash_abbrev=hash_abbrev)
++    # the only known caller of git_submodule_head_hash
++    assert name == 'ChibiOS' and short == True and hash_abbrev == 8
++
++    return os.environ['CHIBIOS_GIT_VERSION']
+ 
+ @conf
+ def git_head_hash(self, short=False, hash_abbrev=8):
+-    return _git_head_hash(self, self.srcnode.abspath(), short=short, hash_abbrev=hash_abbrev)
++    assert short == True and (hash_abbrev == 8 or hash_abbrev == 16)
++
++    if hash_abbrev == 16:
++        return os.environ['GIT_VERSION_EXTENDED']
++    elif hash_abbrev == 8:
++        return os.environ['GIT_VERSION']
+-- 
+2.51.0
+
