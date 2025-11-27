@@ -229,22 +229,23 @@
             #
             # Our silly fix is to inject the correct paths here. In the future,
             # consider submitting a patch upstream to fix this issue properly.
-#             export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$CMAKE_PREFIX_PATH/share
+            export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$CMAKE_PREFIX_PATH/share
             # NOTE: GZ_SIM_PLUGIN_PATH is used intentionally here
-#             export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_PLUGIN_PATH:$CMAKE_PREFIX_PATH/lib
+            export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_PLUGIN_PATH:$CMAKE_PREFIX_PATH/lib
 
             # asv_waves_sim does not use colcon hook and ask us to manually
             # set up our env :/
             #
             # ensure the model and world files are found
-#             MODELS="${pkgs.gz-waves-models}/share/gz-waves-models"
-#             PLUGINS="${pkgs.rosPackages.jazzy.gz-waves}"
-#             export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$MODELS/models:$MODELS/world_models:$MODELS/worlds
+            export MODELS="${pkgs.gz-waves-models}/share/gz-waves-models"
+            export PLUGINS="${pkgs.rosPackages.jazzy.gz-waves}"
+            export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$MODELS/models:$MODELS/world_models:$MODELS/worlds
 
-#             # ensure the system plugins are found
-#             export GZ_SIM_SYSTEM_PLUGIN_PATH=\
-#             $GZ_SIM_SYSTEM_PLUGIN_PATH:\
-#             $PLUGINS/lib
+            # ensure the system plugins are found
+            export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:$PLUGINS/lib
+            # TODO: I have not determined why we need to explictly specify this.
+            # Things work without this variable in a typical ros setup
+            export GZ_RENDERING_PLUGIN_PATH=$GZ_RENDERING_PLUGIN_PATH:$PLUGINS/lib
           '';
 
           packages = [
@@ -262,6 +263,8 @@
             # > nix-flamegraph -t '#devShells.x86_64-linux.default'
             # nix-flamegraph.packages.${system}.default
             pkgs.jq
+            pkgs.strace
+            pkgs.ltrace
             
             # for building & using the sitl
             # see https://github.com/tpwrules/ardupilot-dev-flake/blob/main/flake.nix
@@ -334,7 +337,7 @@
 
                 # waves
                 gz-waves
-                # pkgs.gz-waves-models
+                pkgs.gz-waves-models
 
                 # asv_waves_sim deps
                 gz-cmake-vendor
@@ -346,6 +349,7 @@
                 gz-rendering-vendor
                 gz-sim-vendor
                 sdformat-vendor
+                # gz-ogre-next-vendor
               ];
             })
           ];
