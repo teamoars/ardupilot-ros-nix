@@ -110,3 +110,21 @@ mavlink-server --web-server '127.0.0.1:8080' 'udpserver://0.0.0.0:14550' 'zenoh:
 ```bash
 zenohd
 ```
+
+# On specifying GZ_RENDERING_PLUGIN_PATH
+
+Without GZ_RENDERING_PLUGIN_PATH, it's seemingly only possible to get asv_wave_sim wave graphics rendering running if we build asv_wave_sim on the commandline. The only difference that I was able to find is the RUNPATH of the nix & manually built binaries differing. The nix RUNPATH includes the /lib directory where the files are installed meanwhile for the manual build you need to specify LD_LIBRARY_PATH to get things working.
+
+The general flow of the loading process is as follows:
+
+1. gazebo loads libgz-waves1-rendering.so.1.0.0 (found using GZ_SIM_SYSTEM_PLUGIN_PATH)
+
+2. libgz-waves1-rendering.so.1.0.0 attempts to load libgz-waves1-rendering-ogre2.so.1.0.0
+
+    - On the nix build, this step fails with libgz-waves1-rendering.so.1.0.0 being unable to locate the object file. If GZ_RENDERING_PLUGIN_PATH is specified, the object file can be found.
+
+    - On the manual build, the object file is somehow found. Looking at the plugin loading code in asv_wave_sim's systems/waves/RenderEngineExtensionManager.cc seems to suggest that this is impossible. None of the default search paths seem to include the colcon install directory. It's possible that I am simply too worn out at this point to properly read the code.
+
+When building the project directly with cmake, it also cannot be loaded if GZ_RENDERING_PLUGIN_PATH is not specified! This suggests to me that there is something special about colcon's install directory structure. Perhaps asv_wave_sim is preconfigured to look there? Again, I probably just need to revisit the code another time to get a proper understanding.
+
+The object files, when built using nix, are substantially smaller for whatever reason. If we tell nix to not strip or otherwise touch the objects, we can get the binaries to be very nearly identical to the manually built ones. Despite that, they still won't load without GZ_RENDERING_PLUGIN_PATH.
