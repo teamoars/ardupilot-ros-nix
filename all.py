@@ -44,22 +44,22 @@ if __name__ == "__main__":
 
         with session.declare_subscriber('camera/image') as sub:
             for sample in sub:
-                # a = time.time()
+                a = time.time()
                 img_msg = Image.deserialize(sample.payload.to_bytes())
                 img = br.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
-                # b = time.time()
-                # print(f'decode took {(b-a) * pow(10, 3)}ms')
+                b = time.time()
+                print(f'decode took {(b-a) * pow(10, 3)}ms')
 
-                # a = time.time()
+                a = time.time()
                 ret, jpeg = cv2.imencode('.jpg', img)
                 if not ret:
                     print('failed to encode jpg')
                     break
-                # b = time.time()
-                # print(f'jpeg took {(b-a) * pow(10, 3)}ms')
+                b = time.time()
+                print(f'jpeg took {(b-a) * pow(10, 3)}ms')
                 
-                # a = time.time()
+                a = time.time()
                 pub_img.put(jpeg.tobytes())
                 pub_P.put(z_serialize(P))
-                # b = time.time()
-                # print(f'put took {(b-a) * pow(10, 3)}ms')
+                b = time.time()
+                print(f'put took {(b-a) * pow(10, 3)}ms')
