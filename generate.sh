@@ -17,6 +17,6 @@ cd "$temp_dir"
 ros2nix --distro jazzy --fetch --nixfmt --no-shell --output-as-nix-pkg-name $(find . -name package.xml)
 cd "$prev"
 
-find "$temp_dir" -maxdepth 1 -type f -name '*.nix' -exec mv \{\} . \;
+find "$temp_dir" -maxdepth 1 -type f -name '*.nix' -exec mv \{\} ./generated \;
 
 rm -rf "$temp_dir"

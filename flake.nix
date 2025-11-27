@@ -108,7 +108,7 @@
       };
     };
     overlays.rosOverlay = final: prev: {
-      rosPackages = applyDistroOverlay (import ./overlay.nix) prev.rosPackages;
+      rosPackages = applyDistroOverlay (import ./generated/overlay.nix) prev.rosPackages;
     };
     # the auto-generated ros packages are a bit broken so we apply some fixes
     # TODO: why does the applyDistroOverlay "final'" and "prev'" not have some
