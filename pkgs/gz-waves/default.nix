@@ -9,8 +9,6 @@
   gmp,
   mpfr,
   fftwMpi,
-  sdformat-urdf,
-  gz-cmake-vendor,
   gz-math-vendor,
   gz-plugin-vendor,
   gz-common-vendor,
@@ -19,9 +17,6 @@
   gz-rendering-vendor,
   gz-sim-vendor,
   sdformat-vendor,
-  gz-ogre-next-vendor,
-  tinyxml-2,
-  eigen,
 }:
 buildRosPackage rec {
 # stdenv.mkDerivation (finalAttrs: {
@@ -65,8 +60,6 @@ buildRosPackage rec {
     # cmake
   ];
   propagatedBuildInputs = [
-    # sdformat-urdf # not needed?
-    gz-cmake-vendor
     gz-math-vendor
     gz-plugin-vendor
     gz-common-vendor
@@ -75,20 +68,14 @@ buildRosPackage rec {
     gz-rendering-vendor
     gz-sim-vendor
     sdformat-vendor
-    # ogre2 is secretly needed
-    # the build doesn't fail without it but the visuals break
-    # gz-ogre-next-vendor
   ];
   nativeBuildInputs = [
     cgal
-    # cgal wants them and yet doesn't propagate it?!
+    # cgal wants these and yet doesn't propagate them as build inputs?
     gmp
     mpfr
 
     fftwMpi # I think it's this one?
-    # eigen # not mentioned in the docs
-
-    # tinyxml-2
   ];
 
   meta = {
