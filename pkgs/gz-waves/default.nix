@@ -1,6 +1,5 @@
 {
   lib,
-  stdenv,
   cmake,
   buildRosPackage,
   fetchFromGitHub,
@@ -19,7 +18,6 @@
   sdformat-vendor,
 }:
 buildRosPackage rec {
-# stdenv.mkDerivation (finalAttrs: {
   name = "gz-waves";
 
   src = fetchFromGitHub {
@@ -40,9 +38,6 @@ buildRosPackage rec {
   # better solution might be though.
   GZ_VERSION = "harmonic";
 
-  # TODO: the docs say to build with
-  # -DCMAKE_BUILD_TYPE=RelWithDebInfo
-  # -DCMAKE_CXX_STANDARD=17
   buildType = "ament_cmake";
   # asv_wave_sim docs say to set these
   cmakeFlags = [ 
@@ -50,14 +45,9 @@ buildRosPackage rec {
     "-DBUILD_TESTING=off"
     "-DCMAKE_CXX_STANDARD=17"
   ];
-  # dontWrapQtApps = true;
-  # dontPatchELF = true;
-  # dontStrip = true;
-  # sourceRoot = "${finalAttrs.src.name}/gz-waves/";
   sourceRoot = "${src.name}/gz-waves/";
   buildInputs = [
     ament-cmake
-    # cmake
   ];
   propagatedBuildInputs = [
     gz-math-vendor
@@ -72,8 +62,7 @@ buildRosPackage rec {
   nativeBuildInputs = [
     cgal
     # cgal wants these and yet doesn't propagate them as build inputs?
-    gmp
-    mpfr
+    gmp mpfr
 
     fftwMpi # I think it's this one?
   ];
