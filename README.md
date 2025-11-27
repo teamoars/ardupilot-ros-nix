@@ -9,10 +9,8 @@ nix develop -i -k TERM -k HOME -k XAUTHORITY -k DISPLAY
 Then you can use the ardupilot launch file as usual:
 
 ```bash
-env "GZ_SIM_RESOURCE_PATH=${GZ_SIM_RESOURCE_PATH}:${CMAKE_PREFIX_PATH}/share" "GZ_SIM_SYSTEM_PLUGIN_PATH=${GZ_SIM_PLUGIN_PATH}:${CMAKE_PREFIX_PATH}/lib" nixGLIntel ros2 launch ardupilot_gz_bringup iris_runway.launch.py
+nixGLIntel ros2 launch ardupilot_gz_bringup iris_runway.launch.py
 ```
-
-(note: we set GZ_SIM_RESOURCE_PATH & GZ_SIM_SYSTEM_PLUGIN_PATH to work around an issue with how environment variables are sourced in the ardupilot ros packages)
 
 In a separate terminal bring up mavproxy:
 
@@ -84,20 +82,6 @@ in a "nix develop #generate" env:
 The list of all packages required by ardupilot is here: https://raw.githubusercontent.com/ArduPilot/ardupilot_gz/main/ros2_gz.repos
 
 Some of the dependencies there are already in the ros2 package repos so there's no need to fetch them
-
-# enable camera streaming
-
-ardupilot-gazebo streams camera feeds over rtp but the streaming needs to be toggled on:
-
-```bash
-gz topic -t /camera-1/enable_streaming -m gz.msgs.Boolean -p "data: 1"
-```
-
-To toggle all cameras, use the supplied script:
-
-```bash
-./enable_streaming.sh
-```
 
 # run mavlink-server & zenoh
 
