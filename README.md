@@ -57,7 +57,7 @@ nix develop --max-jobs 0 --builders 'ssh://username@host?ssh-key=/home/user/.ssh
 
 ## env var breakage
 
-The ardupilot ros2 packages have both .dsv and .sh colcon hooks. When built with colcon the standard way (vcs import ..., colcon build), the .dsv files are used and everything works. But for whatever reason nix-ros-overlay uses .sh files instead and things stop working because the .sh hooks we not kept up to date with the .dsv files!
+The ardupilot ros2 packages have both .dsv and .sh colcon hooks. When built with colcon the standard way (vcs import ..., colcon build), the .dsv files are used. But nix-ros-overlay uses the .sh files instead. This leads to breakages because the .sh hooks we not kept up to date with the .dsv files!
 
 - https://discourse.openrobotics.org/t/the-forgotten-gem-that-is-environment-hooks-and-dsv/41581
 
