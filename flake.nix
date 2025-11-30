@@ -14,7 +14,7 @@
     nix-ros-overlay = {
       # TODO: go back to lopsided98's nix-ros-overlay once gazebo no longer
       # depends on freeimage. We're stuck on an old nixpkgs bc upstream has
-      # removed freeimage support
+      # removed freeimage
       # https://github.com/lopsided98/nix-ros-overlay/pull/746
       url = "github:muellerbernd/nix-ros-overlay/develop";
       # inputs.nixpkgs.follows = "nixpkgs";

@@ -112,3 +112,27 @@ The general flow of the loading process is as follows:
 When building the project directly with cmake, it also cannot be loaded if GZ_RENDERING_PLUGIN_PATH is not specified! This suggests to me that there is something special about colcon's install directory structure. Perhaps asv_wave_sim is preconfigured to look there? Again, I probably just need to revisit the code another time to get a proper understanding.
 
 The object files, when built using nix, are substantially smaller for whatever reason. If we tell nix to not strip or otherwise touch the objects, we can get the binaries to be very nearly identical to the manually built ones. Despite that, they still won't load without GZ_RENDERING_PLUGIN_PATH.
+
+If GZ_RENDERING_PLUGIN_PATH is not set, the waves are not rendered in the gui. The below error gets produced:
+
+```
+[GUI] [Msg] Loading plugin [gz-waves1-rendering-ogre2]
+Library [] does not export any plugins. The symbol [GzPluginHook] is missing, or it is not externally visible.
+[GUI] [Err] [RenderEngineExtensionManager.cc:482] Failed to load plugin [gz-waves1-rendering-ogre2] : couldn't load library on path [].
+```
+
+# TODOs
+
+- avoid ros2 entirely by directly bridging gz -> zenoh
+
+    - https://github.com/srmainwaring/gz-python
+
+    - https://gazebosim.org/api/transport/14/python.html
+
+# blueboat experiment
+
+launch with
+
+```bash
+GZ_SIM_RESOURCE_PATH=$PWD/worlds:$PWD/models:$GZ_SIM_RESOURCE_PATH nixGLNvidia-570.195.03 ros2 launch launch/blueboat_waves.launch.py
+```
