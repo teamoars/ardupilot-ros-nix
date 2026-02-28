@@ -14,7 +14,7 @@ vcs import --input ./ros2_gz.repos "$temp_dir/src"
 # temporary dir and copy the produced output back to our repo directory
 prev="$PWD"
 cd "$temp_dir"
-ros2nix --distro jazzy --fetch --nixfmt --no-shell --output-as-nix-pkg-name $(find . -name package.xml)
+ros2nix --distro kilted --fetch --nixfmt --no-shell --output-as-nix-pkg-name $(find . -name package.xml)
 cd "$prev"
 
 find "$temp_dir" -maxdepth 1 -type f -name '*.nix' -exec mv \{\} ./generated \;

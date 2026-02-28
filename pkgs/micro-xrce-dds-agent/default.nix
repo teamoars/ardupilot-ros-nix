@@ -4,21 +4,21 @@
   fetchFromGitHub,
   cmake,
   micro-xrce-dds-client,
-  fast-cdr,
   foonathan-memory,
-  fast-dds,
   spdlog,
+  fastcdr,
+  fastdds,
 }:
 
 stdenv.mkDerivation rec {
   pname = "micro-xrce-dds-agent";
-  version = "2.4.3";
+  version = "3.0.1";
 
   src = fetchFromGitHub {
     owner = "eProsima";
     repo = "Micro-XRCE-DDS-Agent";
     rev = "v${version}";
-    hash = "sha256-t2PZurWc8Kbkm3zFyNwHQea4Yj+zHWFXFqZ0E19km54=";
+    hash = "sha256-nBJ+WuoZhB3+/NiYAH/l1r0BK1aFzAUfGpyOKpWC1sg=";
   };
 
   cmakeFlags = [
@@ -36,10 +36,10 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [
     micro-xrce-dds-client
-    fast-cdr
     foonathan-memory
-    fast-dds
     spdlog
+    fastcdr
+    fastdds
   ];
 
   meta = {

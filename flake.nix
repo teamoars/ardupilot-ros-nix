@@ -76,21 +76,18 @@
     in {
       micro-xrce-dds-gen = pkgs.micro-xrce-dds-gen;
 
-      ardupilot-sitl = pkgs.rosPackages.jazzy.ardupilot-sitl;
+      ardupilot-sitl = pkgs.rosPackages.kilted.ardupilot-sitl;
 
-      gz-waves = pkgs.rosPackages.jazzy.gz-waves;
+      gz-waves = pkgs.rosPackages.kilted.gz-waves;
       gz-waves-models = pkgs.gz-waves-models;
 
-      ardupilot-sitl-models = pkgs.rosPackages.jazzy.ardupilot-sitl-models;
+      ardupilot-sitl-models = pkgs.rosPackages.kilted.ardupilot-sitl-models;
     };
 
     overlays.regularDeps = final: prev: {
       # micro-ros-agent deps
-      fast-dds = prev.callPackage ./pkgs/fast-dds {};
-      fast-cdr = prev.callPackage ./pkgs/fast-cdr {};
       micro-cdr = prev.callPackage ./pkgs/micro-cdr {};
       micro-xrce-dds-client = prev.callPackage ./pkgs/micro-xrce-dds-client {};
-      micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       micro-xrce-dds-gen = prev.callPackage ./pkgs/micro-xrce-dds-gen {};
 
       mavlink-server = prev.callPackage ./pkgs/mavlink-server {};
@@ -102,13 +99,14 @@
     overlays.rosManual = final: prev: {
       rosPackages = applyDistroOverlay (final: prev: {
         gz-waves = prev.callPackage ./pkgs/gz-waves {};
+        micro-xrce-dds-agent = prev.callPackage ./pkgs/micro-xrce-dds-agent {};
       }) prev.rosPackages;
     };
     # make nvidia drivers work without auto-detection
     overlays.nixglFix = final: prev: {
       nixgl = prev.nixgl.override {
-        nvidiaVersion = "570.195.03";
-        nvidiaHash = "sha256-1H3oHZpRNJamCtyc+nL+nhYsZfJyL7lgxPUxvXrF3B4=";
+        nvidiaVersion = "570.207";
+        nvidiaHash = "sha256-LWvSWZeWYjdItXuPkXBmh/i5uMvh4HeyGmPsLGWJfOI=";
       };
     };
     overlays.rosOverlay = final: prev: {
@@ -123,7 +121,8 @@
           # the ardupilot build system is contained within a submodule. It might
           # be possible to use the waf package in nixpkgs instead
           src = previousAttrs.src.override {
-            sha256 = "cSCgsOBVAXJDEG/WWxbYDA8kvwOHLm2JwwmxabB2sIg=";
+            # https://github.com/NixOS/nixpkgs/issues/100498 terrible!
+            sha256 = "0ya0qcgk1cxc753d3hfycq0yry3kvhlk7my86dnrlhg797szhz85";
             fetchSubmodules = true;
           };
 
@@ -185,13 +184,26 @@
               "-DUAGENT_USE_SYSTEM_LOGGER=ON"
             ];
 
+            patches = [
+              ./0001-add-iterator-header.patch
+            ];
+
             propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
-              prev.micro-xrce-dds-agent
+              prev'.micro-xrce-dds-agent
             ];
 
             buildInputs = previousAttrs.buildInputs ++ [
               prev'.ament-lint-auto # missing dependency (TODO: submit a patch?)
+              prev'.ament-cmake-gtest
             ];
+        });
+
+        ardupilot-gazebo = prev'.ardupilot-gazebo.overrideAttrs (finalAttrs: previousAttrs: {
+            GZ_VERSION = "ionic";
+        });
+
+        ardupilot-gz-gazebo = prev'.ardupilot-gz-gazebo.overrideAttrs (finalAttrs: previousAttrs: {
+            GZ_VERSION = "ionic";
         });
 
         # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
@@ -251,14 +263,14 @@
             # consider submitting a patch upstream to fix this issue properly.
             export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$CMAKE_PREFIX_PATH/share
             # NOTE: GZ_SIM_PLUGIN_PATH is used intentionally here
-            export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_PLUGIN_PATH:$CMAKE_PREFIX_PATH/lib
+            export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:$GZ_SIM_PLUGIN_PATH:$CMAKE_PREFIX_PATH/lib
 
             # asv_waves_sim does not use colcon hook and ask us to manually
             # set up our env :/
             #
             # ensure the model and world files are found
             export MODELS="${pkgs.gz-waves-models}/share/gz-waves-models"
-            export PLUGINS="${pkgs.rosPackages.jazzy.gz-waves}"
+            export PLUGINS="${pkgs.rosPackages.kilted.gz-waves}"
             export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$MODELS/models:$MODELS/world_models:$MODELS/worlds
 
             # ensure the system plugins are found
@@ -327,7 +339,7 @@
             pkgs.fftwMpi
             pkgs.eigen
 
-            (with pkgs.rosPackages.jazzy; buildEnv {
+            (with pkgs.rosPackages.kilted; buildEnv {
               paths = [
                 ros-core
                 # "ros2 launch"

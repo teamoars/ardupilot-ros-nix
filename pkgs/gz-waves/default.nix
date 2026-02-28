@@ -34,9 +34,7 @@ buildRosPackage rec {
   '';
 
   # We set this variable so that CMakeLists.txt uses the correct dependencies.
-  # This is silly because it'll only work for jazzy. I'm not sure what the
-  # better solution might be though.
-  GZ_VERSION = "harmonic";
+  GZ_VERSION = "ionic";
 
   buildType = "ament_cmake";
   # asv_wave_sim docs say to set these

@@ -7,13 +7,13 @@
 
 stdenv.mkDerivation rec {
   pname = "micro-xrce-dds-client";
-  version = "2.4.3";
+  version = "3.0.0";
 
   src = fetchFromGitHub {
     owner = "eProsima";
     repo = "Micro-XRCE-DDS-Client";
     rev = "v${version}";
-    hash = "sha256-sru77aJvJYKbpQeCaR/3Xx3X3us+4N3dcAKtzBfgyik=";
+    hash = "sha256-bh9Om36idZ1ybUNn6vHsm6TUDjIccZHTNKgeT8wr+DU=";
   };
 
   nativeBuildInputs = [
