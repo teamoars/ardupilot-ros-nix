@@ -122,7 +122,7 @@
           # be possible to use the waf package in nixpkgs instead
           src = previousAttrs.src.override {
             # https://github.com/NixOS/nixpkgs/issues/100498 terrible!
-            sha256 = "0ya0qcgk1cxc753d3hfycq0yry3kvhlk7my86dnrlhg797szhz85";
+            sha256 = "dzvmoFSp90kPnXL2QcLPm8Lm3/aFcDRNJVcjlSCCn1Y=";
             fetchSubmodules = true;
           };
 
@@ -330,7 +330,8 @@
 
             # a zenoh node that publishes /camera/image
             pkgs.python3Packages.zenoh
-            pkgs.python3Packages.cyclonedds-python
+            # pkgs.python3Packages.cyclonedds-python
+            pkgs.cyclonedds
 
             # asv_waves_sim deps
             pkgs.cgal
