@@ -5,7 +5,7 @@
   makeWrapper,
   fetchFromGitHub,
   gradle_7,
-  jdk,
+  jdk17,
 }:
 
 let
@@ -13,6 +13,7 @@ let
 
   # Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
   gradle = gradle_7;
+  jdk = jdk17;
 in
 stdenv.mkDerivation {
   inherit name;

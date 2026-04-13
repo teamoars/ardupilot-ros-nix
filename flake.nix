@@ -16,7 +16,8 @@
       # depends on freeimage. We're stuck on an old nixpkgs bc upstream has
       # removed freeimage
       # https://github.com/lopsided98/nix-ros-overlay/pull/746
-      url = "github:muellerbernd/nix-ros-overlay/develop";
+      # url = "github:muellerbernd/nix-ros-overlay/develop";
+      url = "github:lopsided98/nix-ros-overlay/develop";
       # inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
@@ -70,7 +71,7 @@
           self.overlays.rosManual
         ];
         config.permittedInsecurePackages = [
-          "freeimage-3.18.0-unstable-2024-04-18"
+          "gradle-7.6.6"
         ];
       };
     in {
@@ -228,7 +229,7 @@
             self.overlays.rosFixes
           ];
           config.permittedInsecurePackages = [
-            "freeimage-3.18.0-unstable-2024-04-18"
+            "gradle-7.6.6"
           ];
           config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
              "nvidia"
@@ -311,7 +312,7 @@
             pkgs.mavlink-server
             pkgs.zenoh
             # zenoh bridge so that we don't have to deal with ros
-            pkgs.zenoh-plugin-ros2dds
+            # pkgs.zenoh-plugin-ros2dds
             # don't ask me why "Intel" corresponds to amdgpu
             pkgs.nixgl.nixGLIntel
             pkgs.nixgl.nixGLNvidia
@@ -332,6 +333,7 @@
             pkgs.python3Packages.zenoh
             # pkgs.python3Packages.cyclonedds-python
             pkgs.cyclonedds
+            pkgs.librealsense
 
             # asv_waves_sim deps
             pkgs.cgal

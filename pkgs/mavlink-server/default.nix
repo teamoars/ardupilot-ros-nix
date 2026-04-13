@@ -38,7 +38,6 @@
 # TODO: for maximum hackiness, we'll only support x86_64 linux :D fix it!
 { stdenv, lib
 , fetchurl
-, alsaLib
 , openssl
 , zlib
 , pulseaudio
