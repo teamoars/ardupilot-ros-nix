@@ -21,10 +21,10 @@ buildRosPackage rec {
   name = "gz-waves";
 
   src = fetchFromGitHub {
-    owner = "srmainwaring";
+    owner = "j-aub";
     repo = "asv_wave_sim";
-    rev = "ca8629df4e191235753dfae92ef725d30b923364";
-    hash = "sha256-BUizPVrvxJ5k9ahYyCYb8wUST/Ppv+qt2gdatjSrd10=";
+    rev = "0574e1485fd80a74a88e2a900d806cf6995c9c56";
+    hash = "sha256-s9jbvSS9Od5jbbyugM8v3OWWIBFfP3Yz/0QFemhsuhk=";
   };
 
   # tries to use git to fetch a test dependency
