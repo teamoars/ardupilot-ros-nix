@@ -9,6 +9,6 @@ final: prev:
   ardupilot-msgs = final.callPackage ./ardupilot-msgs.nix {};
   ardupilot-sitl = final.callPackage ./ardupilot-sitl.nix {};
   ardupilot-sitl-models = final.callPackage ./ardupilot-sitl-models.nix {};
-  micro-ros-agent = final.callPackage ./micro-ros-agent.nix {};
   gazebo-ros-actor-plugin = final.callPackage ./gazebo-ros-actor-plugin.nix {};
+  micro-ros-agent = final.callPackage ./micro-ros-agent.nix {};
 }
