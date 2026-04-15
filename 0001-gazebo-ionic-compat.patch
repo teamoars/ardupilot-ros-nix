@@ -1,0 +1,57 @@
+From 0dd152a7bdb818d8bd740f2fb90e3ce383693fc4 Mon Sep 17 00:00:00 2001
+From: j-aub <j-aub@users.noreply.github.com>
+Date: Tue, 14 Apr 2026 21:51:15 -0400
+Subject: [PATCH] gazebo ionic compat
+
+---
+ CMakeLists.txt | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index db82e6d..b2cfe38 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,12 +15,12 @@ find_package(ament_cmake REQUIRED)
+ find_package(rclcpp REQUIRED)
+ find_package(geometry_msgs REQUIRED)
+ find_package(nav_msgs REQUIRED)
+-find_package(gz-sim8 REQUIRED)
+-find_package(gz-plugin2 REQUIRED)
+-find_package(gz-common5 REQUIRED)
+-find_package(gz-math7 REQUIRED)
+-find_package(gz-transport13 REQUIRED)
+-find_package(gz-msgs10 REQUIRED)
++find_package(gz-sim9 REQUIRED)
++find_package(gz-plugin3 REQUIRED)
++find_package(gz-common6 REQUIRED)
++find_package(gz-math8 REQUIRED)
++find_package(gz-transport14 REQUIRED)
++find_package(gz-msgs11 REQUIRED)
+ 
+ # Add plugin library
+ add_library(${PROJECT_NAME} SHARED
+@@ -39,10 +39,10 @@ ament_target_dependencies(${PROJECT_NAME}
+ )
+ 
+ target_link_libraries(${PROJECT_NAME}
+-  gz-sim8::gz-sim8
+-  gz-plugin2::gz-plugin2
+-  gz-common5::gz-common5
+-  gz-math7::gz-math7
++  gz-sim9::gz-sim9
++  gz-plugin3::gz-plugin3
++  gz-common6::gz-common6
++  gz-math8::gz-math8
+ )
+ 
+ # Install library and executables
+@@ -80,4 +80,4 @@ if(BUILD_TESTING)
+   ament_lint_auto_find_test_dependencies()
+ endif()
+ 
+-ament_package()
+\ No newline at end of file
++ament_package()
+-- 
+2.52.0
+

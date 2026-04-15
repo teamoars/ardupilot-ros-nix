@@ -83,6 +83,8 @@
       gz-waves-models = pkgs.gz-waves-models;
 
       ardupilot-sitl-models = pkgs.rosPackages.kilted.ardupilot-sitl-models;
+
+      gazebo-ros-actor-plugin = pkgs.rosPackages.kilted.gazebo-ros-actor-plugin;
     };
 
     overlays.regularDeps = final: prev: {
@@ -205,6 +207,21 @@
 
         ardupilot-gz-gazebo = prev'.ardupilot-gz-gazebo.overrideAttrs (finalAttrs: previousAttrs: {
             GZ_VERSION = "ionic";
+        });
+
+        gazebo-ros-actor-plugin = prev'.gazebo-ros-actor-plugin.overrideAttrs (finalAttrs: previousAttrs: {
+          patches = [
+            ./0001-gazebo-ionic-compat.patch
+          ];
+
+          propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
+            prev'.gz-sim-vendor
+            prev'.gz-plugin-vendor
+            prev'.gz-common-vendor
+            prev'.gz-math-vendor
+            prev'.gz-transport-vendor
+            prev'.gz-msgs-vendor
+          ];
         });
 
         # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
