@@ -24,12 +24,9 @@
 
     ros2nix = {
       url = "github:wentasah/ros2nix";
-      # the build is failing with:
-      # > configuration error: `project.license` must be valid exactly by one definition (2 matches found):
-      # so we use the upstream nix-ros-overlay for now
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
-      # inputs.nix-ros-overlay.follows = "nix-ros-overlay";
+      inputs.nix-ros-overlay.follows = "nix-ros-overlay";
     };
 
     nixgl = {
