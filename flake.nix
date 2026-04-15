@@ -345,8 +345,14 @@
 
             # a zenoh node that publishes /camera/image
             pkgs.python3Packages.zenoh
-            # pkgs.python3Packages.cyclonedds-python
-            pkgs.cyclonedds
+#             (pkgs.python3Packages.cyclonedds-python.overrideAttrs(finalAttrs: previousAttrs: {
+#               src = pkgs.fetchFromGitHub {
+#                 owner = "eclipse-cyclonedds";
+#                 repo = "cyclonedds-python";
+#                 tag = "11.0.1";
+#                 hash = "sha256-kHAk2cJOMkCcP4Zje28Ew0B1/dHCJsz5KC5SJqXJj2o=";
+#               };
+#             }))
             pkgs.librealsense
 
             # asv_waves_sim deps
@@ -399,6 +405,9 @@
                 gz-sim-vendor
                 sdformat-vendor
                 # gz-ogre-next-vendor
+
+                gazebo-ros-actor-plugin
+                teleop-twist-keyboard
               ];
             })
           ];
