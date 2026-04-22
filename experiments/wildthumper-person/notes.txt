@@ -1,0 +1,5 @@
+- we need to change the world to add a person
+
+	- could spawn the person somehow?
+
+- we need to alter the wildthumper to remove the lidar & add camera
