@@ -12,16 +12,16 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "zenoh-plugin-ros2dds";
-  version = "1.6.2"; # nixpkgs-update: no auto update
+  version = "1.9.0"; # nixpkgs-update: no auto update
 
   src = fetchFromGitHub {
     owner = "eclipse-zenoh";
     repo = "zenoh-plugin-ros2dds";
     tag = version;
-    hash = "sha256-wyjflYKGLcga4IPGtSIUf7YGPmVO2hHdZiKDCDSyMbg=";
+    hash = "sha256-YymJVm9Y34ce60unWk0DniL47TWczP7a7A7ywnIjzNw=";
   };
 
-  cargoHash = "sha256-iEmhgJdsSmJEnQre5DOsu/y1x/kxrUmutEpy86kDMf8=";
+  cargoHash = "sha256-2R0pxrD0wda8I1oNyxftu7N1nRQDW4iwrVkZiruC/L0=";
 
   nativeBuildInputs = [
     cmake
@@ -30,11 +30,24 @@ rustPlatform.buildRustPackage rec {
     # breakpointHook
   ];
 
-  postPatch = ''
-    substituteInPlace CMakeLists.txt --replace-fail \
-      "cmake_minimum_required(VERSION 3.8)" \
-      "cmake_minimum_required(VERSION 3.10)"\
-  '';
+  # questionable bodge
+  #
+  # >   CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
+  # >     Compatibility with CMake < 3.5 has been removed from CMake.
+  # >
+  # >     Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  # >     to tell CMake that the project requires at least <min> but has been updated
+  # >     to work with policies introduced by <max> or earlier.
+  # >
+  # >     Or, add -DCMAKE_POLICY_VERSION_MINIMUM=3.5 to try configuring anyway.
+  # >
+  # >
+  # >
+  # >   thread 'main' (8292) panicked at /build/zenoh-plugin-ros2dds-1.9.0-vendor/cmake-0.1.58/src/lib.rs:1132:5:
+  # >
+  # >   command did not execute successfully, got: exit status: 1
+  # >
+  CMAKE_POLICY_VERSION_MINIMUM = "3.5";
 
   # Some test time out
   # doCheck = false;

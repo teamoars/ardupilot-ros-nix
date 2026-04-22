@@ -105,8 +105,8 @@
     # make nvidia drivers work without auto-detection
     overlays.nixglFix = final: prev: {
       nixgl = prev.nixgl.override {
-        nvidiaVersion = "570.207";
-        nvidiaHash = "sha256-LWvSWZeWYjdItXuPkXBmh/i5uMvh4HeyGmPsLGWJfOI=";
+        nvidiaVersion = "580.126.18";
+        nvidiaHash = "sha256-p3gbLhwtZcZYCRTHbnntRU0ClF34RxHAMwcKCSqatJ0=";
       };
     };
     overlays.rosOverlay = final: prev: {
@@ -349,7 +349,7 @@
             pkgs.mavlink-server
             pkgs.zenoh
             # zenoh bridge so that we don't have to deal with ros
-            # pkgs.zenoh-plugin-ros2dds
+            pkgs.zenoh-plugin-ros2dds
             # don't ask me why "Intel" corresponds to amdgpu
             pkgs.nixgl.nixGLIntel
             pkgs.nixgl.nixGLNvidia
