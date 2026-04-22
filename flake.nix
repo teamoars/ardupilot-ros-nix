@@ -24,12 +24,9 @@
 
     ros2nix = {
       url = "github:wentasah/ros2nix";
-      # the build is failing with:
-      # > configuration error: `project.license` must be valid exactly by one definition (2 matches found):
-      # so we use the upstream nix-ros-overlay for now
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
-      # inputs.nix-ros-overlay.follows = "nix-ros-overlay";
+      inputs.nix-ros-overlay.follows = "nix-ros-overlay";
     };
 
     nixgl = {
@@ -83,6 +80,8 @@
       gz-waves-models = pkgs.gz-waves-models;
 
       ardupilot-sitl-models = pkgs.rosPackages.kilted.ardupilot-sitl-models;
+
+      gazebo-ros-actor-plugin = pkgs.rosPackages.kilted.gazebo-ros-actor-plugin;
     };
 
     overlays.regularDeps = final: prev: {
@@ -123,7 +122,7 @@
           # be possible to use the waf package in nixpkgs instead
           src = previousAttrs.src.override {
             # https://github.com/NixOS/nixpkgs/issues/100498 terrible!
-            sha256 = "dzvmoFSp90kPnXL2QcLPm8Lm3/aFcDRNJVcjlSCCn1Y=";
+            sha256 = "sha256-KZm3w0NODNK7oS8M0KV98AP7D36UAF077bZvN6FMG1E=";
             fetchSubmodules = true;
           };
 
@@ -207,7 +206,26 @@
             GZ_VERSION = "ionic";
         });
 
-        # the auto-generated ardupilot packages want "gz-cmake3" & "gz-sim8"
+        gazebo-ros-actor-plugin = prev'.gazebo-ros-actor-plugin.overrideAttrs (finalAttrs: previousAttrs: {
+          patches = [
+            ./0001-gazebo-ionic-compat.patch
+          ];
+
+          propagatedBuildInputs = previousAttrs.propagatedBuildInputs ++ [
+            prev'.gz-sim-vendor
+            prev'.gz-plugin-vendor
+            prev'.gz-common-vendor
+            prev'.gz-math-vendor
+            prev'.gz-transport-vendor
+            prev'.gz-msgs-vendor
+          ];
+        });
+
+        # ros packages typically depend on 'gz-XXXX-vendor' but the ardupilot
+        # packages conditionally depend on a specific version of the gazebo
+        # packages per the value of the GZ_VERSION env variable. By default, it
+        # wants gazebo harmonic. To make things work, we alias these specific
+        # package names to the generic vendor packages.
         gz-cmake3 = prev'.gz-cmake-vendor;
         gz-sim8 = prev'.gz-sim-vendor;
         gz-common5 = prev'.gz-common-vendor;
@@ -254,6 +272,9 @@
             # will use the devshell's bash?! why can't nix just have a
             # containerized devshell like guix :(
             export TMUX_TMPDIR="$TMPDIR"
+
+            # needed for ardupilot packages to generate correct depedencies
+            export GZ_VERSION='ionic'
             
             # The ardupilot colcon hook has some incompatabilities with
             # nix-ros-overlay. Their hook is written in an unusual way to work
@@ -279,6 +300,11 @@
             # TODO: I have not determined why we need to explictly specify this.
             # Things work without this variable in a typical ros setup
             export GZ_RENDERING_PLUGIN_PATH=$GZ_RENDERING_PLUGIN_PATH:$PLUGINS/lib
+
+            # gazebo_ros_actor_plugin does not use colcon hooks either
+
+            PLUGIN="${pkgs.rosPackages.kilted.gazebo-ros-actor-plugin}/share/gazebo_ros_actor_plugin"
+            export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$PLUGIN/config/skins
           '';
 
           packages = [
@@ -291,6 +317,7 @@
             pkgs.which
             pkgs.less
             pkgs.vim
+            pkgs.gdb
             # had attempted to generate a flamegraph to see if 'nix develop'
             # could be sped up:
             # > nix-flamegraph -t '#devShells.x86_64-linux.default'
@@ -304,10 +331,20 @@
             pkgs.micro-xrce-dds-gen
             pkgs.git
             pkgs.rsync
-            pkgs.mavproxy
+            # use a slightly newer version of mavproxy which removes the
+            # dependency on the 'future' library
+            (pkgs.mavproxy.overrideAttrs (finalAttrs: previousAttrs: {
+              src = pkgs.fetchFromGitHub {
+                owner = "ArduPilot";
+                repo = "MAVProxy";
+                rev = "db52f3f5d1991942026c00b51a3ce1ce85998cbd";
+                hash = "sha256-4D0lZRDXlVmHa1gr62TO8mTXgEnYw/HcOuiDOnqafAI=";
+              };
+            }))
             # otherwise mavproxy crashes
             # related: https://discourse.nixos.org/t/fritzing-no-gsettings-schemas-are-installed-on-the-system/64603
             pkgs.gsettings-desktop-schemas
+            # interfacing with ardupilot
             pkgs.mission-planner
             pkgs.mavlink-server
             pkgs.zenoh
@@ -331,8 +368,42 @@
 
             # a zenoh node that publishes /camera/image
             pkgs.python3Packages.zenoh
-            # pkgs.python3Packages.cyclonedds-python
-            pkgs.cyclonedds
+            # use a newer version of cyclonedds-python for python 3.13 compatibility
+            # (cyclonedds version must match :/)
+            (let
+              version = "11.0.1";
+              cyclonedds = (pkgs.cyclonedds.overrideAttrs (finalAttrs: previousAttrs: {
+                # merged upstream methinks
+                patches = [];
+                src = pkgs.fetchFromGitHub {
+                  owner = "eclipse-cyclonedds";
+                  repo = "cyclonedds";
+                  tag = version;
+                  hash = "sha256-+p1J6xEwrUPLheuQL4gm4x1e6rH/+qYsWc9eeJrmRR4=";
+                };
+              }));
+            in
+            (pkgs.python3Packages.cyclonedds-python.overrideAttrs (finalAttrs: previousAttrs: {
+              buildInputs = [ cyclonedds ];
+              # TODO: debug why async tests are failing
+              # >   /build/source/tests/test_topic_inheritance.py:29: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+              # > Failed: async def functions are not natively supported.
+              # by including pytest-asyncio everything is supposed to work..
+              doCheck = false;
+              # https://discourse.nixos.org/t/disable-python-testing-in-flake/46381/4
+              dontUsePytestCheck="please dont";
+              nativeCheckInputs = previousAttrs.nativeCheckInputs ++ [
+                pkgs.python3Packages.pytest-asyncio
+              ];
+              env.CYCLONEDDS_HOME = "${cyclonedds.out}";
+              src = pkgs.fetchFromGitHub {
+                owner = "eclipse-cyclonedds";
+                repo = "cyclonedds-python";
+                tag = version;
+                hash = "sha256-kHAk2cJOMkCcP4Zje28Ew0B1/dHCJsz5KC5SJqXJj2o=";
+              };
+            })))
+            # needed this to extract camera projection matrix from cam
             pkgs.librealsense
 
             # asv_waves_sim deps
@@ -385,6 +456,9 @@
                 gz-sim-vendor
                 sdformat-vendor
                 # gz-ogre-next-vendor
+
+                gazebo-ros-actor-plugin
+                teleop-twist-keyboard
               ];
             })
           ];

@@ -19,3 +19,8 @@ repositories:
     type: git
     url: https://github.com/micro-ROS/micro-ROS-Agent.git
     version: kilted
+  # for experiments
+  gazebo_ros_actor_plugin:
+    type: git
+    url: https://github.com/blackcoffeerobotics/gazebo-ros-actor-plugin
+    version: jazzy-harmonic

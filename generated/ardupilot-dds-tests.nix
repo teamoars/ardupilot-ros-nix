@@ -31,8 +31,8 @@ buildRosPackage rec {
   src = fetchFromGitHub {
     owner = "ArduPilot";
     repo = "ardupilot";
-    rev = "5b0e01b1fb590759cece5551d74a2750abf2960f";
-    sha256 = "0ixh4bqxp5cwy5mlbcn8bjjbrmmnk6wd80hqd4az362q59h9z0ll";
+    rev = "6dd6c4e1c2da83a4673db844b51662f7a1e3afeb";
+    sha256 = "1z8bwf91n2sjx7pd7ix5wvayfcdydaimh1xji3dgxb1aznb5dngc";
   };
 
   buildType = "ament_python";

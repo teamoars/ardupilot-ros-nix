@@ -18,8 +18,8 @@ buildRosPackage rec {
   src = fetchFromGitHub {
     owner = "ArduPilot";
     repo = "ardupilot_gazebo";
-    rev = "28eea6db8cb16bb8b798f8e751e763f3cec52d35";
-    sha256 = "1nas59v3rmqhdbyh5s6k8fvl1m8pl7vcj22snlz82iam0n2kcra8";
+    rev = "cc0290d964dfa373531963a8fc39093a0836af0a";
+    sha256 = "1srfj3ly22arzfkjfjqdggc4hq774146ps2xnqj8yix96k00p6yf";
   };
 
   buildType = "ament_cmake";
