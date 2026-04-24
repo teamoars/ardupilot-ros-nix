@@ -368,6 +368,7 @@
 
             # a zenoh node that publishes /camera/image
             pkgs.python3Packages.zenoh
+            pkgs.python3Packages.msgspec
             # use a newer version of cyclonedds-python for python 3.13 compatibility
             # (cyclonedds version must match :/)
             (let

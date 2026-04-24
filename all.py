@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 import sys
 import time
+from datetime import datetime
+
+import msg
 
 # uhhhh
 from cv_bridge import CvBridge
@@ -11,6 +14,7 @@ import numpy as np
 import cv2
 from cyclonedds.idl import IdlStruct
 from cyclonedds.idl.types import uint8, int32, uint32, array, sequence
+import msgspec
 
 # manually built from
 # https://github.com/ros2/common_interfaces/blob/rolling/sensor_msgs/msg/Image.msg
@@ -34,8 +38,11 @@ class Image(IdlStruct, typename='Image'):
     data: sequence[uint8]
 
 if __name__ == "__main__":
-    # for performance reasons (laziness), this is hardcoded for now
+    # for performance reasons (laziness), this is hardcoded for now.
+    # Proper solution would have use get P out of the corresponding
+    # camera_info topic
     P = [[205.46962738037109, 0.0, 320.0, 0.0], [0.0, 205.46965599060059, 240.0, 0.0], [0.0, 0.0, 1.0, 0.0]]
+    P = z_serialize(P)
     br = CvBridge()
 
     with zenoh.open(zenoh.Config()) as session:
@@ -44,6 +51,8 @@ if __name__ == "__main__":
 
         with session.declare_subscriber('camera/image') as sub:
             for sample in sub:
+                # important that we get the time stamp ASAP
+                timestamp = datetime.now()
                 a = time.time()
                 img_msg = Image.deserialize(sample.payload.to_bytes())
                 img = br.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
@@ -59,7 +68,10 @@ if __name__ == "__main__":
                 print(f'jpeg took {(b-a) * pow(10, 3)}ms')
                 
                 a = time.time()
-                pub_img.put(jpeg.tobytes())
-                pub_P.put(z_serialize(P))
+                # pub_img.put(z_serialize((timestamp, jpeg.tobytes())))
+                image = msg.Image(timestamp=timestamp, jpeg=jpeg.tobytes())
+                msg.encode(image)
+                pub_img.put(msg.encode(image))
+                pub_P.put(P)
                 b = time.time()
                 print(f'put took {(b-a) * pow(10, 3)}ms')
